@@ -226,15 +226,16 @@ const handleLogin = async () => {
   align-items: center;
   justify-content: center;
   padding: 40px;
+  background: #f5f7fa;
 }
 
 .auth-card {
   width: 100%;
-  max-width: 1000px;
-  height: 600px;
+  max-width: 900px;
+  height: 560px;
   background: white;
-  border-radius: 24px;
-  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
   position: relative;
   overflow: hidden;
   display: flex;
@@ -243,6 +244,8 @@ const handleLogin = async () => {
   &.hover-left {
     .left-side {
       flex: 0 0 70%;
+      transform: scale(1.02);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
     }
     .right-side {
       flex: 0 0 30%;
@@ -255,6 +258,8 @@ const handleLogin = async () => {
     }
     .right-side {
       flex: 0 0 70%;
+      transform: scale(1.02);
+      box-shadow: 0 12px 35px rgba(0, 0, 0, 0.12);
     }
   }
 }
@@ -262,29 +267,34 @@ const handleLogin = async () => {
 .side {
   flex: 0 0 50%;
   position: relative;
-  transition: flex 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 
   &.left-side {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #eef2f7 0%, #dfe7f0 100%);
+    clip-path: polygon(0 0, 100% 0, 85% 100%, 0 100%);
   }
 
   &.right-side {
-    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    background: linear-gradient(135deg, #f8f9fa 0%, #f1f3f5 100%);
+    clip-path: polygon(15% 0, 100% 0, 100% 100%, 0 100%);
   }
 }
 
 .divider {
   position: absolute;
   left: 50%;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: white;
+  top: 10px;
+  bottom: 10px;
+  width: 1.5px;
+  background: #495057;
   transform: translateX(-50%) skewX(-15deg);
   z-index: 10;
-  box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.1);
   transition: left 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 
   .auth-card.hover-left & {
@@ -300,9 +310,11 @@ const handleLogin = async () => {
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   position: relative;
+  padding: 60px 40px;
 }
 
 .side-overlay {
@@ -311,9 +323,9 @@ const handleLogin = async () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.2);
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.3s ease;
 
   &.active {
     opacity: 1;
@@ -323,11 +335,10 @@ const handleLogin = async () => {
 .form-wrapper {
   z-index: 5;
   text-align: center;
-  padding: 40px;
   width: 100%;
-  max-width: 400px;
-  transition: all 0.4s ease;
-  opacity: 0.8;
+  max-width: 350px;
+  transition: all 0.3s ease;
+  opacity: 0.9;
 
   &.active {
     opacity: 1;
@@ -335,79 +346,68 @@ const handleLogin = async () => {
 }
 
 .side-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: white;
-  margin-bottom: 30px;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  color: #212529;
+  margin-bottom: 40px;
   transition: all 0.3s ease;
-
-  .form-wrapper.active & {
-    margin-bottom: 40px;
-  }
+  letter-spacing: 0.5px;
 }
 
 .form-container {
-  animation: fadeInUp 0.4s ease;
-}
+  width: 100%;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  opacity: 0;
+  transform: translateY(10px);
 
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
+  .form-wrapper.active & {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
 :deep(.el-form-item) {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
 }
 
 :deep(.el-input__wrapper) {
-  border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
   padding: 8px 15px;
-  background: rgba(255, 255, 255, 0.95);
+  background: white;
+  border: 1px solid #dee2e6;
   transition: all 0.3s ease;
+  box-shadow: none;
 
   &:hover {
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    border-color: #adb5bd;
   }
 
   &.is-focus {
-    box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
   }
 }
 
 .submit-btn {
   width: 100%;
-  border-radius: 12px;
+  border-radius: 4px;
   font-size: 16px;
-  font-weight: 600;
-  height: 50px;
-  margin-top: 10px;
-  background: white;
-  color: #667eea;
+  font-weight: 500;
+  height: 48px;
+  margin-top: 15px;
+  background: #2563eb;
+  color: white;
   border: none;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
   transition: all 0.3s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-    background: white !important;
-    color: #667eea !important;
-  }
-
-  .right-side & {
-    color: #f5576c;
-
-    &:hover {
-      color: #f5576c !important;
-    }
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    background: #1d4ed8 !important;
+    color: white !important;
   }
 }
 
@@ -416,26 +416,44 @@ const handleLogin = async () => {
   justify-content: space-between;
   align-items: center;
   width: 100%;
+  margin-bottom: 15px;
 }
 
 .forgot-link {
-  color: white;
+  color: #495057;
   text-decoration: none;
   font-size: 14px;
-  opacity: 0.9;
-  transition: opacity 0.3s ease;
+  transition: color 0.3s ease;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   &:hover {
-    opacity: 1;
+    color: #2563eb;
     text-decoration: underline;
   }
 }
 
 :deep(.el-checkbox__label) {
-  color: white;
+  color: #495057;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 14px;
 }
 
 :deep(.el-checkbox__inner) {
-  background: rgba(255, 255, 255, 0.9);
+  background: white;
+  border: 1px solid #dee2e6;
+
+  &:hover {
+    border-color: #2563eb;
+  }
+}
+
+:deep(.el-checkbox__input.is-checked .el-checkbox__inner) {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+:deep(.el-input__placeholder) {
+  color: #adb5bd;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 </style>

@@ -1,6 +1,5 @@
 package com.campus.activity.service;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.campus.activity.dto.LoginDTO;
 import com.campus.activity.dto.RegisterDTO;
 import com.campus.activity.entity.User;
@@ -26,21 +25,15 @@ public class AuthService {
             throw new RuntimeException("两次输入的密码不一致");
         }
 
-        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getUsername, registerDTO.getUsername());
-        if (userMapper.selectCount(wrapper) > 0) {
+        if (userMapper.findByUsername(registerDTO.getUsername()) != null) {
             throw new RuntimeException("用户名已存在");
         }
 
-        wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getEmail, registerDTO.getEmail());
-        if (userMapper.selectCount(wrapper) > 0) {
+        if (userMapper.findByEmail(registerDTO.getEmail()) != null) {
             throw new RuntimeException("邮箱已被注册");
         }
 
-        wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getPhone, registerDTO.getPhone());
-        if (userMapper.selectCount(wrapper) > 0) {
+        if (userMapper.findByPhone(registerDTO.getPhone()) != null) {
             throw new RuntimeException("手机号已被注册");
         }
 
@@ -61,9 +54,7 @@ public class AuthService {
     }
 
     public UserVO login(LoginDTO loginDTO) {
-        LambdaQueryWrapper<User> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(User::getUsername, loginDTO.getUsername());
-        User user = userMapper.selectOne(wrapper);
+        User user = userMapper.findByUsername(loginDTO.getUsername());
 
         if (user == null) {
             throw new RuntimeException("用户名或密码错误");
@@ -95,3 +86,4 @@ public class AuthService {
         return userVO;
     }
 }
+
