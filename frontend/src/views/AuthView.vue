@@ -122,7 +122,10 @@
 import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { useRouter } from 'vue-router'
+import { authApi } from '../services/api'
 
+const router = useRouter()
 const hoverSide = ref<string | null>(null)
 const registerFormRef = ref<FormInstance>()
 const loginFormRef = ref<FormInstance>()
@@ -190,9 +193,19 @@ const handleRegister = async () => {
     if (valid) {
       registerLoading.value = true
       try {
-        ElMessage.success('注册功能开发中...')
+        const response = await authApi.register(registerForm)
+        if (response.code === 200) {
+          ElMessage.success('注册成功')
+          // 保存token和用户信息
+          localStorage.setItem('token', response.data.token)
+          localStorage.setItem('user', JSON.stringify(response.data))
+          // 跳转到欢迎页面
+          router.push('/welcome')
+        } else {
+          ElMessage.error(response.message || '注册失败')
+        }
       } catch (error) {
-        ElMessage.error('注册失败')
+        ElMessage.error('注册失败，请检查网络连接')
       } finally {
         registerLoading.value = false
       }
@@ -207,9 +220,19 @@ const handleLogin = async () => {
     if (valid) {
       loginLoading.value = true
       try {
-        ElMessage.success('登录功能开发中...')
+        const response = await authApi.login(loginForm)
+        if (response.code === 200) {
+          ElMessage.success('登录成功')
+          // 保存token和用户信息
+          localStorage.setItem('token', response.data.token)
+          localStorage.setItem('user', JSON.stringify(response.data))
+          // 跳转到欢迎页面
+          router.push('/welcome')
+        } else {
+          ElMessage.error(response.message || '登录失败')
+        }
       } catch (error) {
-        ElMessage.error('登录失败')
+        ElMessage.error('登录失败，请检查网络连接')
       } finally {
         loginLoading.value = false
       }
