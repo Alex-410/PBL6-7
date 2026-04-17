@@ -10,7 +10,7 @@ Target Server Type    : MYSQL
 Target Server Version : 80040
 File Encoding         : 65001
 
-Date: 2026-04-16 22:27:53
+Date: 2026-04-18 02:17:04
 */
 
 SET FOREIGN_KEY_CHECKS=0;
@@ -87,6 +87,37 @@ CREATE TABLE `notification` (
 -- ----------------------------
 
 -- ----------------------------
+-- Table structure for `student`
+-- ----------------------------
+DROP TABLE IF EXISTS `student`;
+CREATE TABLE `student` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `student_no` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `age` int DEFAULT NULL,
+  `gender` varchar(10) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `college_code` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `major_code` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `class_no` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `enrollment_year` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` bigint DEFAULT NULL,
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `student_no` (`student_no`),
+  KEY `user_id` (`user_id`),
+  KEY `idx_student_no` (`student_no`),
+  CONSTRAINT `student_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ----------------------------
+-- Records of student
+-- ----------------------------
+INSERT INTO `student` VALUES ('1', '20230102526', '张三', '20', '男', '01', '02', '5', '2023', null, '2026-04-18 01:49:21', '2026-04-18 01:49:21');
+INSERT INTO `student` VALUES ('2', '20230102527', '李四', '20', '男', '01', '02', '5', '2023', null, '2026-04-18 02:04:53', '2026-04-18 02:04:53');
+INSERT INTO `student` VALUES ('3', '20230102101', '王五', '20', '男', '01', '01', '1', '2023', null, '2026-04-18 02:15:24', '2026-04-18 02:15:24');
+
+-- ----------------------------
 -- Table structure for `user`
 -- ----------------------------
 DROP TABLE IF EXISTS `user`;
@@ -109,10 +140,13 @@ CREATE TABLE `user` (
   KEY `idx_username` (`username`),
   KEY `idx_email` (`email`),
   KEY `idx_phone` (`phone`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ----------------------------
 -- Records of user
 -- ----------------------------
 INSERT INTO `user` VALUES ('1', 'testuser', '$2a$10$frxgoRDmAMLxAVnQIxwOcebTP7HMlP78PG7vr/bcl2np9VtcCty1G', 'test@example.com', '13800138000', 'testuser', null, 'USER', '1', '2026-04-16 22:03:10', '2026-04-16 22:03:10');
 INSERT INTO `user` VALUES ('2', 'soare02', '$2a$10$iYMYGBqqyXU1LJuyhd8VsO0u/t4mgT5u/fz.gkuWPaDrWFpv.y/4q', '2426882433@qq.com', '18683279836', 'soare02', null, 'USER', '1', '2026-04-16 22:13:06', '2026-04-16 22:13:06');
+INSERT INTO `user` VALUES ('3', '20230102526', '$2a$10$7L5CzqJiFkqobSgCCXa5KOyOV9lWbWcD0x709G8XVN2khIymTxNXW', null, null, '张三', null, 'USER', '1', '2026-04-18 02:03:34', '2026-04-18 02:03:34');
+INSERT INTO `user` VALUES ('4', '20230102527', '$2a$10$fAzVMWGIk9WrfxMFvMK42.Rj6CkUkuuS2J9EOUtH5g9D494EOlCAO', null, null, '李四', null, 'USER', '1', '2026-04-18 02:05:19', '2026-04-18 02:05:19');
+INSERT INTO `user` VALUES ('5', '20230102101', '$2a$10$u8Q7wQrp7YERrkd9ovsqtO38pvptLD/JIffK1.OxCVTyXCLR/i9ge', null, null, '王五', null, 'USER', '1', '2026-04-18 02:15:43', '2026-04-18 02:15:43');

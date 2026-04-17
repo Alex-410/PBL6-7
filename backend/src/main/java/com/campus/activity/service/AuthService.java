@@ -2,7 +2,9 @@ package com.campus.activity.service;
 
 import com.campus.activity.dto.LoginDTO;
 import com.campus.activity.dto.RegisterDTO;
+import com.campus.activity.entity.Student;
 import com.campus.activity.entity.User;
+import com.campus.activity.mapper.StudentMapper;
 import com.campus.activity.mapper.UserMapper;
 import com.campus.activity.utils.JwtUtil;
 import com.campus.activity.vo.UserVO;
@@ -16,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
     private final UserMapper userMapper;
+    private final StudentMapper studentMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
@@ -54,14 +57,26 @@ public class AuthService {
     }
 
     public UserVO login(LoginDTO loginDTO) {
-        User user = userMapper.findByUsername(loginDTO.getUsername());
+        Student student = studentMapper.findByStudentNo(loginDTO.getUsername());
 
-        if (user == null) {
-            throw new RuntimeException("用户名或密码错误");
+        if (student == null) {
+            throw new RuntimeException("学号不存在");
         }
 
-        if (!passwordEncoder.matches(loginDTO.getPassword(), user.getPassword())) {
-            throw new RuntimeException("用户名或密码错误");
+        String expectedPassword = student.getStudentNo().substring(student.getStudentNo().length() - 6);
+        if (!loginDTO.getPassword().equals(expectedPassword)) {
+            throw new RuntimeException("学号或密码错误");
+        }
+
+        User user = userMapper.findByUsername(student.getStudentNo());
+        if (user == null) {
+            user = new User();
+            user.setUsername(student.getStudentNo());
+            user.setPassword(passwordEncoder.encode(expectedPassword));
+            user.setNickname(student.getName());
+            user.setRole("USER");
+            user.setStatus(1);
+            userMapper.insert(user);
         }
 
         if (user.getStatus() == 0) {
