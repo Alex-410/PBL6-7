@@ -10,10 +10,11 @@ public class Student {
     private String name;
     private Integer age;
     private String gender;
-    private String collegeCode;
-    private String majorCode;
+    private String collegeName;
+    private String majorName;
     private String classNo;
     private String enrollmentYear;
+    private String grade;
     private Long userId;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;

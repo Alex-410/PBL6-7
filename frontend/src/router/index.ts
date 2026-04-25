@@ -3,16 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    {
-      path: '/',
-      name: 'auth',
-      component: () => import('../views/AuthView.vue')
-    },
-    {
-      path: '/welcome',
-      name: 'welcome',
-      component: () => import('../views/WelcomeView.vue')
-    }
+    { path: '/', name: 'auth', component: () => import('../views/AuthView.vue') },
+    { path: '/dashboard', name: 'dashboard', component: () => import('../views/DashboardView.vue') },
   ]
 })
 

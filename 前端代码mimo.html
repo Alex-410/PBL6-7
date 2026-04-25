@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>集趣 · 校园活动平台</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Source+Serif+4:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#F6F1E9;--surface:#FFF;--surface-alt:#EDE8DF;
+  --ink:#1A1613;--ink-muted:#78716C;--ink-light:#A8A29E;
+  --accent:#B91C1C;--accent-hover:#991B1B;--accent-bg:#FEF2F2;
+  --green:#166534;--green-bg:#F0FDF4;--amber:#A16207;--amber-bg:#FFFBEB;
+  --blue:#1E40AF;--blue-bg:#EFF6FF;--purple:#7E22CE;--purple-bg:#FAF5FF;
+  --border:#1A1613;--border-light:#D6CFC4;
+  --shadow:3px 3px 0 var(--border);--shadow-sm:2px 2px 0 var(--border);
+  --radius:3px;--radius-lg:6px;
+  --font-display:'Instrument Serif',Georgia,serif;
+  --font-body:'Source Serif 4','Songti SC',serif;
+  --font-mono:'DM Mono','Menlo',monospace;
+  --header-h:60px;--sidebar-w:240px;
+}
+html{font-size:15px;scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--bg);color:var(--ink);line-height:1.6;min-height:100vh;overflow-x:hidden}
+a{color:var(--accent);text-decoration:none}
+button{font-family:var(--font-mono);cursor:pointer;border:none;background:none;font-size:.82rem}
+input,select,textarea{font-family:var(--font-mono);font-size:.82rem;border:2px solid var(--border);border-radius:var(--radius);padding:10px 12px;background:var(--surface);color:var(--ink);outline:none;transition:border .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+textarea{resize:vertical;min-height:80px}
+table{width:100%;border-collapse:collapse}
+th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border-light);font-size:.82rem}
+th{font-family:var(--font-mono);font-weight:500;background:var(--surface-alt);position:sticky;top:0}
+
+/* ========== UTILITIES ========== */
+.mono{font-family:var(--font-mono)}
+.serif{font-family:var(--font-display)}
+.flex{display:flex}.flex-col{flex-direction:column}.items-center{align-items:center}.justify-between{justify-content:space-between}.gap-8{gap:8px}.gap-12{gap:12px}.gap-16{gap:16px}.gap-24{gap:24px}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.w-full{width:100%}.mt-8{margin-top:8px}.mt-16{margin-top:16px}.mt-24{margin-top:24px}.mb-8{margin-bottom:8px}.mb-16{margin-bottom:16px}.mb-24{margin-bottom:24px}
+.text-center{text-align:center}.text-right{text-align:right}.text-muted{color:var(--ink-muted)}.text-sm{font-size:.78rem}.text-xs{font-size:.7rem}
+.hidden{display:none!important}
+
+/* ========== COMPONENTS ========== */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 20px;border:2px solid var(--border);border-radius:var(--radius);background:var(--surface);font-weight:500;transition:all .12s;box-shadow:var(--shadow-sm);white-space:nowrap}
+.btn:hover{transform:translate(-1px,-1px);box-shadow:4px 4px 0 var(--border)}
+.btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--border)}
+.btn-primary{background:var(--ink);color:var(--surface)}
+.btn-primary:hover{background:#2d2820}
+.btn-accent{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-accent:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.btn-green{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-ghost{background:transparent;box-shadow:none;border-color:transparent}
+.btn-ghost:hover{background:var(--surface-alt);box-shadow:none;transform:none}
+.btn-sm{padding:6px 12px;font-size:.75rem}
+.btn-danger{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:2px;font-family:var(--font-mono);font-size:.7rem;font-weight:500;border:1.5px solid;letter-spacing:.02em}
+.badge-red{color:var(--accent);border-color:var(--accent);background:var(--accent-bg)}
+.badge-green{color:var(--green);border-color:var(--green);background:var(--green-bg)}
+.badge-amber{color:var(--amber);border-color:var(--amber);background:var(--amber-bg)}
+.badge-blue{color:var(--blue);border-color:var(--blue);background:var(--blue-bg)}
+.badge-purple{color:var(--purple);border-color:var(--purple);background:var(--purple-bg)}
+.badge-gray{color:var(--ink-muted);border-color:var(--border-light);background:var(--surface-alt)}
+
+.card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--border)}
+.card-body{padding:20px}
+.card-header{padding:16px 20px;border-bottom:2px solid var(--border);background:var(--surface-alt);font-family:var(--font-mono);font-weight:500;font-size:.82rem;display:flex;align-items:center;justify-content:space-between}
+.card-flat{box-shadow:none}
+.card-flat:hover{transform:none;box-shadow:none}
+
+.stat-card{padding:20px;border:2px solid var(--border);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow-sm)}
+.stat-card .stat-value{font-family:var(--font-display);font-size:2.2rem;line-height:1.1}
+.stat-card .stat-label{font-family:var(--font-mono);font-size:.72rem;color:var(--ink-muted);margin-top:4px;text-transform:uppercase;letter-spacing:.08em}
+
+.section-title{font-family:var(--font-display);font-size:1.6rem;display:flex;align-items:center;gap:12px}
+.section-title::after{content:'';flex:1;height:2px;background:var(--border)}
+
+.modal-overlay{position:fixed;inset:0;background:rgba(26,22,19,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px;animation:fadeIn .15s}
+.modal{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius-lg);box-shadow:6px 6px 0 var(--border);width:100%;max-width:560px;max-height:85vh;overflow-y:auto;animation:slideUp .2s}
+.modal-header{padding:20px 24px;border-bottom:2px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-header h3{font-family:var(--font-display);font-size:1.3rem}
+.modal-body{padding:24px}
+.modal-footer{padding:16px 24px;border-top:1px solid var(--border-light);display:flex;justify-content:flex-end;gap:8px}
+
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-family:var(--font-mono);font-size:.78rem;font-weight:500;margin-bottom:6px;color:var(--ink-muted);text-transform:uppercase;letter-spacing:.06em}
+.form-group input,.form-group select,.form-group textarea{width:100%}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+.tag{display:inline-block;padding:2px 8px;border:1.5px solid var(--border-light);border-radius:2px;font-family:var(--font-mono);font-size:.7rem;color:var(--ink-muted);margin:2px}
+
+.empty-state{text-align:center;padding:60px 20px;color:var(--ink-muted)}
+.empty-state .empty-icon{font-size:3rem;margin-bottom:12px;opacity:.4}
+.empty-state p{font-family:var(--font-mono);font-size:.82rem}
+
+.toast{position:fixed;top:20px;right:20px;z-index:2000;padding:14px 20px;border:2px solid var(--border);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow);font-family:var(--font-mono);font-size:.82rem;animation:slideIn .2s;display:flex;align-items:center;gap:10px}
+.toast-success{border-color:var(--green);background:var(--green-bg)}
+.toast-error{border-color:var(--accent);background:var(--accent-bg)}
+
+.progress-bar{height:8px;background:var(--surface-alt);border:1.5px solid var(--border-light);border-radius:2px;overflow:hidden}
+.progress-bar-fill{height:100%;background:var(--ink);transition:width .3s}
+
+.avatar{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:1rem;background:var(--surface-alt);flex-shrink:0}
+.avatar-lg{width:56px;height:56px;font-size:1.4rem}
+
+/* ========== LOGIN PAGE ========== */
+.login-page{min-height:100vh;display:grid;grid-template-columns:1fr 1fr}
+.login-brand{background:var(--ink);color:var(--surface);display:flex;flex-direction:column;justify-content:center;padding:60px;position:relative;overflow:hidden}
+.login-brand::before{content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;background:repeating-linear-gradient(45deg,transparent,transparent 30px,rgba(255,255,255,.02) 30px,rgba(255,255,255,.02) 60px)}
+.login-brand h1{font-family:var(--font-display);font-size:3.8rem;line-height:1;margin-bottom:16px;position:relative}
+.login-brand .tagline{font-family:var(--font-mono);font-size:.88rem;color:rgba(255,255,255,.6);max-width:380px;line-height:1.7;position:relative}
+.login-brand .edition{position:absolute;bottom:40px;left:60px;font-family:var(--font-mono);font-size:.72rem;color:rgba(255,255,255,.3);letter-spacing:.12em;text-transform:uppercase}
+.login-right{display:flex;flex-direction:column;justify-content:center;padding:60px;background:var(--bg)}
+.login-form-container{max-width:400px;width:100%;margin:0 auto}
+.login-form-container h2{font-family:var(--font-display);font-size:1.8rem;margin-bottom:8px}
+.login-form-container .subtitle{font-family:var(--font-mono);font-size:.78rem;color:var(--ink-muted);margin-bottom:32px}
+.login-form-container .form-group input{padding:12px 14px}
+.login-form-container .btn{width:100%;justify-content:center;padding:13px;font-size:.88rem;margin-top:8px}
+.demo-accounts{margin-top:36px;border:2px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm)}
+.demo-accounts-header{padding:10px 14px;background:var(--ink);color:var(--surface);font-family:var(--font-mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;display:flex;align-items:center;gap:8px}
+.demo-accounts-header::before{content:'>'}
+.demo-account{padding:12px 14px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background .1s;font-family:var(--font-mono);font-size:.78rem}
+.demo-account:last-child{border-bottom:none}
+.demo-account:hover{background:var(--surface-alt)}
+.demo-account .role-name{font-weight:500}
+.demo-account .creds{color:var(--ink-muted);font-size:.72rem}
+.demo-account .fill-hint{font-size:.68rem;color:var(--accent);opacity:0;transition:opacity .15s}
+.demo-account:hover .fill-hint{opacity:1}
+
+/* ========== APP LAYOUT ========== */
+.app-layout{display:flex;min-height:100vh}
+.sidebar{width:var(--sidebar-w);background:var(--ink);color:var(--surface);position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;z-index:100;transition:transform .25s}
+.sidebar-brand{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,.1)}
+.sidebar-brand h2{font-family:var(--font-display);font-size:1.4rem;color:var(--surface)}
+.sidebar-brand .role-tag{font-family:var(--font-mono);font-size:.68rem;color:rgba(255,255,255,.4);margin-top:2px;text-transform:uppercase;letter-spacing:.1em}
+.sidebar-nav{flex:1;padding:16px 12px;overflow-y:auto}
+.sidebar-section{margin-bottom:20px}
+.sidebar-section-title{font-family:var(--font-mono);font-size:.65rem;color:rgba(255,255,255,.3);text-transform:uppercase;letter-spacing:.12em;padding:0 8px;margin-bottom:6px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius);font-family:var(--font-mono);font-size:.8rem;color:rgba(255,255,255,.6);cursor:pointer;transition:all .12s;margin-bottom:2px}
+.nav-item:hover{color:var(--surface);background:rgba(255,255,255,.08)}
+.nav-item.active{color:var(--surface);background:rgba(255,255,255,.12);font-weight:500}
+.nav-item .nav-icon{width:20px;text-align:center;font-size:1rem}
+.sidebar-footer{padding:16px 12px;border-top:1px solid rgba(255,255,255,.1)}
+.sidebar-footer .user-info{display:flex;align-items:center;gap:10px;padding:8px;margin-bottom:8px}
+.sidebar-footer .user-info .avatar{border-color:rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:var(--surface);width:32px;height:32px;font-size:.82rem}
+.sidebar-footer .user-name{font-family:var(--font-mono);font-size:.78rem;color:var(--surface)}
+.sidebar-footer .user-role{font-size:.68rem;color:rgba(255,255,255,.4)}
+.sidebar-footer .logout-btn{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:var(--radius);font-family:var(--font-mono);font-size:.78rem;color:rgba(255,255,255,.5);cursor:pointer;width:100%;transition:all .12s}
+.sidebar-footer .logout-btn:hover{color:var(--accent);background:rgba(185,28,28,.15)}
+
+.main-area{flex:1;margin-left:var(--sidebar-w);min-height:100vh;display:flex;flex-direction:column}
+.topbar{height:var(--header-h);border-bottom:2px solid var(--border);background:var(--surface);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:50}
+.topbar-left{display:flex;align-items:center;gap:16px}
+.topbar-title{font-family:var(--font-display);font-size:1.2rem}
+.topbar-date{font-family:var(--font-mono);font-size:.72rem;color:var(--ink-muted)}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.notif-btn{position:relative;width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:var(--radius);border:1.5px solid var(--border-light);font-size:1.1rem;transition:all .12s}
+.notif-btn:hover{border-color:var(--border);background:var(--surface-alt)}
+.notif-badge{position:absolute;top:-4px;right:-4px;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;font-family:var(--font-mono);font-size:.6rem;display:flex;align-items:center;justify-content:center;border:2px solid var(--surface)}
+.hamburger{display:none;width:36px;height:36px;align-items:center;justify-content:center;border:1.5px solid var(--border-light);border-radius:var(--radius);font-size:1.2rem;cursor:pointer}
+
+.content{flex:1;padding:28px}
+
+/* ========== ACTIVITY CARD ========== */
+.activity-card{border:2px solid var(--border);border-radius:var(--radius);background:var(--surface);box-shadow:var(--shadow-sm);overflow:hidden;transition:all .15s;cursor:pointer;position:relative}
+.activity-card:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--border)}
+.activity-card-img{height:160px;background:var(--surface-alt);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.activity-card-img .placeholder-icon{font-size:3rem;opacity:.2}
+.activity-card-badges{position:absolute;top:10px;left:10px;display:flex;gap:6px;flex-wrap:wrap}
+.activity-card-badges .badge{background:var(--surface);font-size:.65rem}
+.activity-card-body{padding:16px}
+.activity-card-title{font-family:var(--font-display);font-size:1.15rem;margin-bottom:8px;line-height:1.3}
+.activity-card-meta{font-family:var(--font-mono);font-size:.72rem;color:var(--ink-muted);display:flex;flex-direction:column;gap:4px}
+.activity-card-meta span{display:flex;align-items:center;gap:6px}
+.activity-card-footer{padding:12px 16px;border-top:1px solid var(--border-light);display:flex;align-items:center;justify-content:space-between}
+.activity-card-footer .spots{font-family:var(--font-mono);font-size:.72rem;color:var(--ink-muted)}
+.activity-card-footer .spots strong{color:var(--ink)}
+
+/* ========== FILTER BAR ========== */
+.filter-bar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px;align-items:center}
+.filter-bar .search-input{flex:1;min-width:200px;max-width:360px;position:relative}
+.filter-bar .search-input input{padding-left:36px;width:100%}
+.filter-bar .search-input::before{content:'⌕';position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:1rem;color:var(--ink-muted);pointer-events:none}
+.filter-chip{padding:7px 14px;border:1.5px solid var(--border-light);border-radius:2px;font-family:var(--font-mono);font-size:.75rem;cursor:pointer;transition:all .12s;background:var(--surface)}
+.filter-chip:hover{border-color:var(--border)}
+.filter-chip.active{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+
+/* ========== TABLE WRAPPER ========== */
+.table-wrap{overflow-x:auto;border:2px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);background:var(--surface)}
+
+/* ========== DETAIL VIEW ========== */
+.detail-header{display:flex;gap:24px;margin-bottom:24px}
+.detail-img{width:320px;height:220px;border:2px solid var(--border);border-radius:var(--radius);background:var(--surface-alt);display:flex;align-items:center;justify-content:center;font-size:4rem;opacity:.15;flex-shrink:0}
+.detail-info{flex:1}
+.detail-info h1{font-family:var(--font-display);font-size:2rem;margin-bottom:8px}
+.detail-meta{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.detail-meta-item{display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:.8rem;color:var(--ink-muted)}
+.detail-desc{font-size:.95rem;line-height:1.8;color:var(--ink);margin-bottom:20px}
+.detail-actions{display:flex;gap:10px;flex-wrap:wrap}
+
+/* ========== CALENDAR ========== */
+.calendar-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.calendar-header-cell{padding:8px;text-align:center;font-family:var(--font-mono);font-size:.72rem;font-weight:500;color:var(--ink-muted);text-transform:uppercase}
+.calendar-cell{min-height:80px;padding:6px;border:1px solid var(--border-light);background:var(--surface);font-family:var(--font-mono);font-size:.72rem;position:relative}
+.calendar-cell.today{background:var(--amber-bg);border-color:var(--amber)}
+.calendar-cell .day-num{font-weight:500;margin-bottom:4px}
+.calendar-cell .event-dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin:1px}
+
+/* ========== MOBILE BOTTOM NAV ========== */
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--ink);border-top:2px solid rgba(255,255,255,.1);z-index:100;padding:6px 0 env(safe-area-inset-bottom)}
+.bottom-nav-items{display:flex;justify-content:space-around}
+.bottom-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 12px;color:rgba(255,255,255,.45);font-family:var(--font-mono);font-size:.6rem;cursor:pointer;transition:color .12s;border:none;background:none}
+.bottom-nav-item.active{color:var(--surface)}
+.bottom-nav-item .nav-icon{font-size:1.2rem}
+
+/* ========== OVERLAY (mobile sidebar) ========== */
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(26,22,19,.5);z-index:99}
+
+/* ========== ANIMATIONS ========== */
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.anim-in{animation:slideUp .3s ease both}
+.anim-in-1{animation-delay:.05s}.anim-in-2{animation-delay:.1s}.anim-in-3{animation-delay:.15s}.anim-in-4{animation-delay:.2s}.anim-in-5{animation-delay:.25s}
+
+/* ========== RESPONSIVE ========== */
+@media(max-width:1024px){
+  .grid-4{grid-template-columns:repeat(2,1fr)}
+  .grid-3{grid-template-columns:repeat(2,1fr)}
+  .detail-header{flex-direction:column}
+  .detail-img{width:100%}
+}
+@media(max-width:768px){
+  :root{--sidebar-w:260px}
+  .login-page{grid-template-columns:1fr}
+  .login-brand{display:none}
+  .login-right{padding:30px 20px;min-height:100vh}
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .sidebar-overlay.show{display:block}
+  .main-area{margin-left:0}
+  .hamburger{display:flex}
+  .content{padding:16px;padding-bottom:80px}
+  .bottom-nav{display:block}
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr}
+  .form-row{grid-template-columns:1fr}
+  .filter-bar .search-input{max-width:100%;min-width:0}
+  .topbar{padding:0 16px}
+  .stat-card .stat-value{font-size:1.6rem}
+  .section-title{font-size:1.3rem}
+  .modal{max-width:100%;margin:10px;max-height:90vh}
+  .detail-header{flex-direction:column}
+  .detail-img{width:100%;height:160px}
+  .activity-card-img{height:130px}
+  .table-wrap{font-size:.78rem}
+  th,td{padding:8px 10px}
+}
+@media(max-width:480px){
+  .topbar-date{display:none}
+  .filter-bar{gap:6px}
+  .btn{padding:8px 14px;font-size:.78rem}
+}
+
+/* ========== SCROLLBAR ========== */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-light);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--ink-muted)}
+
+/* ========== GRAIN OVERLAY ========== */
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.025;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// ==================== MOCK DATA ====================
+const MOCK_USERS = [
+  { id:'u1', username:'student', password:'123456', role:'student', name:'张小明', college:'计算机科学与技术学院', grade:'大三', avatar:'明', email:'zhangxm@campus.edu', phone:'138****6789', tags:['编程','AI','篮球'] },
+  { id:'u2', username:'admin', password:'123456', role:'admin', name:'李管理', college:'教务处', grade:'—', avatar:'李', email:'admin@campus.edu', phone:'139****0000', tags:[] },
+  { id:'u3', username:'publisher', password:'123456', role:'publisher', name:'王组织', college:'校学生会', grade:'—', avatar:'王', email:'publisher@campus.edu', phone:'137****1111', tags:['活动策划'] },
+];
+
+const COLORS = ['#E8D5B7','#B7D5E8','#D5E8B7','#E8B7C9','#C9B7E8','#B7E8D5','#E8CBB7','#B7CBE8'];
+const CAT_ICONS = { '学术':'📖','文艺':'🎭','体育':'⚽','公益':'🤝','社交':'💬','就业':'💼','讲座':'🎓','其他':'📌' };
+
+let MOCK_ACTIVITIES = [
+  { id:'a1', creatorId:'u3', title:'人工智能前沿技术分享会', category:'学术', description:'邀请校内外AI领域专家，分享大模型、多模态、具身智能等前沿方向的最新进展。面向全校师生开放，欢迎对AI感兴趣的同学参加。', cover:'', startTime:'2026-05-10 14:00', endTime:'2026-05-10 17:00', location:'图书馆学术报告厅A301', maxCount:200, registeredCount:156, fee:0, status:'published', hasBonus:true, bonusType:'综测加分', bonusValue:0.5, approvalStatus:'approved', tags:['AI','大模型','技术'], createdAt:'2026-04-20', college:'计算机学院' },
+  { id:'a2', creatorId:'u3', title:'第二十届校园歌手大赛', category:'文艺', description:'一年一度的校园歌手大赛海选正式开启！无论你是实力唱将还是音乐爱好者，这里都是你的舞台。本次大赛设置独唱、合唱两个赛道。', cover:'', startTime:'2026-05-15 18:30', endTime:'2026-05-15 21:30', location:'大学生活动中心剧场', maxCount:500, registeredCount:342, fee:0, status:'published', hasBonus:true, bonusType:'二课学分', bonusValue:1, approvalStatus:'approved', tags:['歌唱','比赛','海选'], createdAt:'2026-04-18', college:'校团委' },
+  { id:'a3', creatorId:'u3', title:'院际篮球友谊赛', category:'体育', description:'计算机学院 vs 电子工程学院篮球友谊赛。欢迎两院同学前来观赛助威！现场设有互动抽奖环节。', cover:'', startTime:'2026-05-08 15:00', endTime:'2026-05-08 17:30', location:'北区体育馆篮球场', maxCount:300, registeredCount:87, fee:0, status:'published', hasBonus:false, bonusType:'', bonusValue:0, approvalStatus:'approved', tags:['篮球','友谊赛','体育'], createdAt:'2026-04-19', college:'体育部' },
+  { id:'a4', creatorId:'u3', title:'敬老院关爱志愿活动', category:'公益', description:'本周六前往阳光敬老院开展志愿服务，陪伴老人聊天、协助整理内务、表演文艺节目。集合地点：校门口。请准时到达。', cover:'', startTime:'2026-05-11 08:30', endTime:'2026-05-11 12:00', location:'阳光敬老院（校车接送）', maxCount:30, registeredCount:28, fee:0, status:'published', hasBonus:true, bonusType:'志愿时长', bonusValue:4, approvalStatus:'approved', tags:['志愿','敬老','公益'], createdAt:'2026-04-21', college:'青年志愿者协会' },
+  { id:'a5', creatorId:'u3', title:'创业经验分享沙龙', category:'就业', description:'邀请三位成功创业的校友回到母校，分享他们从0到1的创业历程、踩过的坑和宝贵经验。圆桌对话+自由交流。', cover:'', startTime:'2026-05-18 14:00', endTime:'2026-05-18 16:30', location:'创新创业中心208室', maxCount:80, registeredCount:12, fee:0, status:'pending', hasBonus:true, bonusType:'综测加分', bonusValue:0.3, approvalStatus:'pending', tags:['创业','校友','分享'], createdAt:'2026-04-22', college:'创业学院' },
+  { id:'a6', creatorId:'u3', title:'手机摄影技巧工坊', category:'文艺', description:'零基础也能拍大片！专业摄影师带你掌握手机构图、光线运用和后期修图技巧。请提前下载Snapseed。', cover:'', startTime:'2026-05-12 19:00', endTime:'2026-05-12 21:00', location:'艺术楼多媒体教室B201', maxCount:40, registeredCount:38, fee:10, status:'published', hasBonus:false, bonusType:'', bonusValue:0, approvalStatus:'approved', tags:['摄影','工坊','手机'], createdAt:'2026-04-17', college:'艺术学院' },
+  { id:'a7', creatorId:'u3', title:'English Corner Weekly', category:'社交', description:'每周三晚的英语角活动！本周话题：The Future of Work。外教Tom和Sarah将到场与大家交流。茶歇提供。', cover:'', startTime:'2026-05-07 19:00', endTime:'2026-05-07 21:00', location:'外语楼一楼大厅', maxCount:50, registeredCount:23, fee:0, status:'published', hasBonus:false, bonusType:'', bonusValue:0, approvalStatus:'approved', tags:['英语','口语','社交'], createdAt:'2026-04-15', college:'外国语学院' },
+  { id:'a8', creatorId:'u3', title:'大学生心理健康讲座', category:'讲座', description:'心理咨询中心特邀专家开展「压力管理与情绪调节」主题讲座，帮助同学们更好地应对学业和生活压力。', cover:'', startTime:'2026-05-09 14:00', endTime:'2026-05-09 16:00', location:'综合楼学术报告厅', maxCount:300, registeredCount:167, fee:0, status:'published', hasBonus:true, bonusType:'综测加分', bonusValue:0.2, approvalStatus:'approved', tags:['心理','健康','讲座'], createdAt:'2026-04-16', college:'学生处' },
+  { id:'a9', creatorId:'u3', title:'48小时编程马拉松', category:'学术', description:'HackCampus 2026春季编程马拉松！组队挑战真实项目，48小时内从创意到原型。丰厚奖金等你来拿！', cover:'', startTime:'2026-05-20 18:00', endTime:'2026-05-22 18:00', location:'工程训练中心三楼', maxCount:120, registeredCount:78, fee:0, status:'published', hasBonus:true, bonusType:'综测加分', bonusValue:1.5, approvalStatus:'approved', tags:['编程','马拉松','比赛'], createdAt:'2026-04-14', college:'计算机学院' },
+  { id:'a10', creatorId:'u3', title:'2026迎新晚会', category:'文艺', description:'欢迎2026级新生的盛大晚会！歌舞、小品、魔术精彩纷呈。', cover:'', startTime:'2026-03-01 19:00', endTime:'2026-03-01 22:00', location:'大学生活动中心剧场', maxCount:800, registeredCount:756, fee:0, status:'completed', hasBonus:false, bonusType:'', bonusValue:0, approvalStatus:'approved', tags:['迎新','晚会'], createdAt:'2026-02-20', college:'校学生会' },
+  { id:'a11', creatorId:'u3', title:'读书分享会·四月', category:'学术', description:'本月共读书目《人类简史》。欢迎分享你的阅读感悟，碰撞思想火花。', cover:'', startTime:'2026-05-14 19:00', endTime:'2026-05-14 21:00', location:'图书馆研讨室305', maxCount:25, registeredCount:18, fee:0, status:'published', hasBonus:false, bonusType:'', bonusValue:0, approvalStatus:'approved', tags:['读书','分享','人文'], createdAt:'2026-04-10', college:'图书馆' },
+  { id:'a12', creatorId:'u3', title:'瑜伽入门体验课', category:'体育', description:'专业瑜伽老师带你体验基础瑜伽。适合零基础，自备瑜伽垫或使用场馆提供的垫子。', cover:'', startTime:'2026-05-13 18:00', endTime:'2026-05-13 19:30', location:'体育馆二楼舞蹈房', maxCount:20, registeredCount:20, fee:15, status:'published', hasBonus:false, bonusType:'', bonusValue:0, approvalStatus:'approved', tags:['瑜伽','体验','健身'], createdAt:'2026-04-12', college:'体育部' },
+  { id:'a13', creatorId:'u3', title:'校园环保快闪行动', category:'公益', description:'响应世界环境日，发起校园环保快闪。捡拾垃圾+环保知识问答+创意DIY。', cover:'', startTime:'2026-06-05 10:00', endTime:'2026-06-05 12:00', location:'校中心广场', maxCount:100, registeredCount:0, fee:0, status:'rejected', hasBonus:true, bonusType:'志愿时长', bonusValue:2, approvalStatus:'rejected', tags:['环保','快闪'], createdAt:'2026-04-23', college:'环保协会' },
+  { id:'a14', creatorId:'u3', title:'经典电影放映夜·《星际穿越》', category:'文艺', description:'露天电影放映活动！本期放映诺兰经典科幻片《星际穿越》。提供爆米花和饮品。', cover:'', startTime:'2026-05-16 19:30', endTime:'2026-05-16 22:30', location:'南区草坪（遇雨移至活动中心）', maxCount:150, registeredCount:89, fee:0, status:'published', hasBonus:false, bonusType:'', bonusValue:0, approvalStatus:'approved', tags:['电影','户外','科幻'], createdAt:'2026-04-11', college:'电影社' },
+  { id:'a15', creatorId:'u3', title:'简历诊断与面试模拟工坊', category:'就业', description:'HR亲临现场，一对一简历诊断+模拟面试。名额有限，先到先得！', cover:'', startTime:'2026-05-19 14:00', endTime:'2026-05-19 17:00', location:'就业指导中心面试室', maxCount:20, registeredCount:15, fee:0, status:'pending', hasBonus:false, bonusType:'', bonusValue:0, approvalStatus:'pending', tags:['简历','面试','就业'], createdAt:'2026-04-23', college:'就业中心' },
+];
+
+let MOCK_REGISTRATIONS = [
+  { id:'r1', userId:'u1', activityId:'a1', status:'registered', registeredAt:'2026-04-21' },
+  { id:'r2', userId:'u1', activityId:'a4', status:'registered', registeredAt:'2026-04-22' },
+  { id:'r3', userId:'u1', activityId:'a8', status:'checked_in', registeredAt:'2026-04-17' },
+  { id:'r4', userId:'u1', activityId:'a10', status:'completed', registeredAt:'2026-02-25' },
+  { id:'r5', userId:'u1', activityId:'a9', status:'registered', registeredAt:'2026-04-15' },
+];
+
+let MOCK_NOTIFS = [
+  { id:'n1', userId:'u1', title:'报名成功', content:'你已成功报名「人工智能前沿技术分享会」', time:'2026-04-21 10:30', read:false },
+  { id:'n2', userId:'u1', title:'活动提醒', content:'「敬老院关爱志愿活动」将于明天8:30开始，请准时到达校门口集合', time:'2026-04-23 20:00', read:false },
+  { id:'n3', userId:'u1', title:'加分到账', content:'参加「2026迎新晚会」获得综测加分 0.2 分', time:'2026-03-02 09:00', read:true },
+];
+
+// ==================== STATE ====================
+const state = {
+  user: null,
+  view: 'dashboard',
+  activityFilter: '全部',
+  searchQuery: '',
+  selectedActivity: null,
+  sidebarOpen: false,
+  showNotifs: false,
+};
+
+// ==================== UTILS ====================
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const today = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+};
+const todayStr = () => {
+  const d = new Date();
+  const days = ['日','一','二','三','四','五','六'];
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日 星期${days[d.getDay()]}`;
+};
+const getActivity = id => MOCK_ACTIVITIES.find(a => a.id === id);
+const getRegistrations = userId => MOCK_REGISTRATIONS.filter(r => r.userId === userId);
+const isRegistered = (userId, actId) => MOCK_REGISTRATIONS.some(r => r.userId === userId && r.activityId === actId && (r.status === 'registered' || r.status === 'checked_in' || r.status === 'completed'));
+const getNotifs = userId => MOCK_NOTIFS.filter(n => n.userId === userId);
+const unreadCount = userId => getNotifs(userId).filter(n => !n.read).length;
+const statusLabel = s => ({published:'已发布',pending:'待审批',rejected:'已驳回',completed:'已结束',cancelled:'已取消',draft:'草稿'}[s]||s);
+const statusBadge = s => ({published:'badge-green',pending:'badge-amber',rejected:'badge-red',completed:'badge-gray',cancelled:'badge-gray',draft:'badge-gray'}[s]||'badge-gray');
+const regStatusLabel = s => ({registered:'已报名',checked_in:'已签到',completed:'已完成',cancelled:'已取消'}[s]||s);
+const regStatusBadge = s => ({registered:'badge-blue',checked_in:'badge-green',completed:'badge-purple',cancelled:'badge-gray'}[s]||'badge-gray');
+
+function toast(msg, type='success') {
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.innerHTML = `${type==='success'?'✓':'✕'} ${msg}`;
+  document.body.appendChild(el);
+  setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }, 2500);
+}
+
+function getProgressPercent(current, max) {
+  return Math.min(100, Math.round((current / max) * 100));
+}
+
+// ==================== RENDER ENGINE ====================
+function render() {
+  const app = document.getElementById('app');
+  if (!state.user) {
+    app.innerHTML = renderLogin();
+  } else {
+    app.innerHTML = renderApp();
+    attachAppEvents();
+  }
+}
+
+// ==================== LOGIN PAGE ====================
+function renderLogin() {
+  return `
+    <div class="login-page">
+      <div class="login-brand">
+        <h1>集趣</h1>
+        <p class="tagline">校园活动一站式管理平台<br>发现 · 参与 · 记录你的每一次校园体验</p>
+        <div class="edition">CAMPUS EDITION · 2026</div>
+      </div>
+      <div class="login-right">
+        <div class="login-form-container">
+          <h2>登录</h2>
+          <p class="subtitle">使用你的平台账号登录</p>
+          <div class="form-group">
+            <label>用户名</label>
+            <input type="text" id="login-user" placeholder="请输入用户名" autocomplete="off">
+          </div>
+          <div class="form-group">
+            <label>密码</label>
+            <input type="password" id="login-pass" placeholder="请输入密码">
+          </div>
+          <button class="btn btn-primary" onclick="handleLogin()">登 录</button>
+
+          <div class="demo-accounts">
+            <div class="demo-accounts-header">演示账号 · 点击自动填入</div>
+            ${MOCK_USERS.map(u => `
+              <div class="demo-account" onclick="fillLogin('${u.username}','${u.password}')">
+                <div>
+                  <div class="role-name">${u.name} <span style="color:var(--ink-muted);font-weight:400">· ${roleLabel(u.role)}</span></div>
+                  <div class="creds">${u.username} / ${u.password}</div>
+                </div>
+                <span class="fill-hint">点击填入 →</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function roleLabel(r) {
+  return {student:'学生',admin:'管理员',publisher:'活动发布者'}[r]||r;
+}
+
+function fillLogin(u, p) {
+  const ui = document.getElementById('login-user');
+  const pi = document.getElementById('login-pass');
+  if (ui) { ui.value = u; ui.style.borderColor = 'var(--green)'; }
+  if (pi) { pi.value = p; pi.style.borderColor = 'var(--green)'; }
+  setTimeout(() => {
+    if (ui) ui.style.borderColor = '';
+    if (pi) pi.style.borderColor = '';
+  }, 1500);
+}
+
+function handleLogin() {
+  const u = document.getElementById('login-user').value.trim();
+  const p = document.getElementById('login-pass').value.trim();
+  if (!u || !p) { toast('请输入用户名和密码', 'error'); return; }
+  const user = MOCK_USERS.find(x => x.username === u && x.password === p);
+  if (!user) { toast('用户名或密码错误', 'error'); return; }
+  state.user = user;
+  state.view = 'dashboard';
+  state.selectedActivity = null;
+  render();
+  toast(`欢迎回来，${user.name}`);
+}
+
+function handleLogout() {
+  state.user = null;
+  state.view = 'dashboard';
+  state.selectedActivity = null;
+  state.sidebarOpen = false;
+  render();
+}
+
+// ==================== MAIN APP ====================
+function renderApp() {
+  const u = state.user;
+  const sidebarItems = getSidebarItems(u.role);
+  return `
+    <div class="app-layout">
+      ${renderSidebar(u, sidebarItems)}
+      <div class="sidebar-overlay ${state.sidebarOpen?'show':''}" onclick="toggleSidebar()"></div>
+      <div class="main-area">
+        <div class="topbar">
+          <div class="topbar-left">
+            <button class="hamburger" onclick="toggleSidebar()">☰</button>
+            <span class="topbar-title">${getViewTitle()}</span>
+          </div>
+          <div class="topbar-right">
+            <span class="topbar-date mono text-sm text-muted">${todayStr()}</span>
+            <button class="notif-btn" onclick="toggleNotifs()">
+              🔔
+              ${unreadCount(u.id)>0?`<span class="notif-badge">${unreadCount(u.id)}</span>`:''}
+            </button>
+          </div>
+        </div>
+        ${state.showNotifs ? renderNotifPanel() : ''}
+        <div class="content">
+          ${renderViewContent()}
+        </div>
+      </div>
+      ${renderBottomNav(u.role)}
+    </div>
+  `;
+}
+
+function getSidebarItems(role) {
+  if (role === 'student') return [
+    {section:'发现', items:[
+      {id:'dashboard',icon:'📋',label:'活动广场'},
+      {id:'calendar',icon:'📅',label:'日历视图'},
+    ]},
+    {section:'我的', items:[
+      {id:'my-activities',icon:'📌',label:'我的报名'},
+      {id:'my-bonus',icon:'🎖️',label:'加分记录'},
+      {id:'profile',icon:'👤',label:'个人中心'},
+    ]},
+  ];
+  if (role === 'publisher') return [
+    {section:'概览', items:[
+      {id:'dashboard',icon:'📊',label:'数据概览'},
+    ]},
+    {section:'活动管理', items:[
+      {id:'create-activity',icon:'✚',label:'发布活动'},
+      {id:'my-activities',icon:'📋',label:'我的活动'},
+      {id:'registrations',icon:'👥',label:'报名管理'},
+    ]},
+    {section:'账号', items:[
+      {id:'profile',icon:'👤',label:'账号设置'},
+    ]},
+  ];
+  if (role === 'admin') return [
+    {section:'概览', items:[
+      {id:'dashboard',icon:'📊',label:'平台概览'},
+    ]},
+    {section:'审核管理', items:[
+      {id:'approvals',icon:'✅',label:'活动审批'},
+      {id:'all-activities',icon:'📋',label:'全部活动'},
+    ]},
+    {section:'用户管理', items:[
+      {id:'users',icon:'👥',label:'用户管理'},
+      {id:'publishers',icon:'🏪',label:'发布者管理'},
+    ]},
+    {section:'数据', items:[
+      {id:'reports',icon:'📈',label:'数据报表'},
+    ]},
+  ];
+  return [];
+}
+
+function renderSidebar(u, sections) {
+  return `
+    <div class="sidebar ${state.sidebarOpen?'open':''}">
+      <div class="sidebar-brand">
+        <h2>集趣</h2>
+        <div class="role-tag">${roleLabel(u.role)}端</div>
+      </div>
+      <div class="sidebar-nav">
+        ${sections.map(s => `
+          <div class="sidebar-section">
+            <div class="sidebar-section-title">${s.section}</div>
+            ${s.items.map(item => `
+              <div class="nav-item ${state.view===item.id?'active':''}" onclick="navigate('${item.id}')">
+                <span class="nav-icon">${item.icon}</span>
+                <span>${item.label}</span>
+              </div>
+            `).join('')}
+          </div>
+        `).join('')}
+      </div>
+      <div class="sidebar-footer">
+        <div class="user-info">
+          <div class="avatar">${u.avatar}</div>
+          <div>
+            <div class="user-name">${u.name}</div>
+            <div class="user-role">${u.college}</div>
+          </div>
+        </div>
+        <button class="logout-btn" onclick="handleLogout()">⏻ 退出登录</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderBottomNav(role) {
+  let items = [];
+  if (role === 'student') items = [
+    {id:'dashboard',icon:'📋',label:'广场'},
+    {id:'calendar',icon:'📅',label:'日历'},
+    {id:'my-activities',icon:'📌',label:'我的'},
+    {id:'profile',icon:'👤',label:'我的'},
+  ];
+  if (role === 'publisher') items = [
+    {id:'dashboard',icon:'📊',label:'概览'},
+    {id:'create-activity',icon:'✚',label:'发布'},
+    {id:'my-activities',icon:'📋',label:'活动'},
+    {id:'profile',icon:'👤',label:'我的'},
+  ];
+  if (role === 'admin') items = [
+    {id:'dashboard',icon:'📊',label:'概览'},
+    {id:'approvals',icon:'✅',label:'审批'},
+    {id:'all-activities',icon:'📋',label:'活动'},
+    {id:'users',icon:'👥',label:'用户'},
+  ];
+  return `
+    <div class="bottom-nav">
+      <div class="bottom-nav-items">
+        ${items.map(i => `
+          <button class="bottom-nav-item ${state.view===i.id?'active':''}" onclick="navigate('${i.id}')">
+            <span class="nav-icon">${i.icon}</span>
+            <span>${i.label}</span>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function getViewTitle() {
+  const titles = {
+    'dashboard': state.user?.role==='student'?'活动广场':state.user?.role==='admin'?'平台概览':'数据概览',
+    'calendar':'日历视图','my-activities':state.user?.role==='student'?'我的报名':'我的活动',
+    'my-bonus':'加分记录','profile':'个人中心','create-activity':'发布活动',
+    'registrations':'报名管理','approvals':'活动审批','all-activities':'全部活动',
+    'users':'用户管理','publishers':'发布者管理','reports':'数据报表',
+    'activity-detail':'活动详情',
+  };
+  return titles[state.view] || '集趣';
+}
+
+function navigate(view) {
+  state.view = view;
+  state.selectedActivity = null;
+  state.sidebarOpen = false;
+  state.showNotifs = false;
+  render();
+}
+
+function toggleSidebar() {
+  state.sidebarOpen = !state.sidebarOpen;
+  render();
+}
+
+function toggleNotifs() {
+  state.showNotifs = !state.showNotifs;
+  render();
+}
+
+function renderNotifPanel() {
+  const notifs = getNotifs(state.user.id);
+  return `
+    <div style="position:absolute;right:70px;top:54px;z-index:200;width:340px;background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);max-height:400px;overflow-y:auto;">
+      <div style="padding:14px 16px;border-bottom:2px solid var(--border);font-family:var(--font-mono);font-size:.82rem;font-weight:500;display:flex;justify-content:space-between;align-items:center;">
+        消息通知
+        <button class="btn btn-sm btn-ghost" onclick="markAllRead()">全部已读</button>
+      </div>
+      ${notifs.length === 0 ? '<div class="empty-state" style="padding:30px"><p>暂无消息</p></div>' :
+        notifs.map(n => `
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border-light);${n.read?'':'background:var(--amber-bg)'}">
+            <div style="font-family:var(--font-mono);font-size:.78rem;font-weight:500;margin-bottom:3px;">${n.title}</div>
+            <div style="font-size:.82rem;color:var(--ink-muted);line-height:1.5;">${n.content}</div>
+            <div style="font-family:var(--font-mono);font-size:.68rem;color:var(--ink-light);margin-top:4px;">${n.time}</div>
+          </div>
+        `).join('')}
+    </div>
+  `;
+}
+
+function markAllRead() {
+  getNotifs(state.user.id).forEach(n => n.read = true);
+  state.showNotifs = false;
+  render();
+  toast('已全部标为已读');
+}
+
+// ==================== VIEW ROUTER ====================
+function renderViewContent() {
+  if (state.selectedActivity) return renderActivityDetail();
+  const role = state.user.role;
+  if (role === 'student') return renderStudentView();
+  if (role === 'publisher') return renderPublisherView();
+  if (role === 'admin') return renderAdminView();
+  return '<p>未知角色</p>';
+}
+
+// ==================== STUDENT VIEWS ====================
+function renderStudentView() {
+  switch(state.view) {
+    case 'dashboard': return renderStudentDashboard();
+    case 'calendar': return renderCalendar();
+    case 'my-activities': return renderMyActivities();
+    case 'my-bonus': return renderMyBonus();
+    case 'profile': return renderProfile();
+    default: return renderStudentDashboard();
+  }
+}
+
+function renderStudentDashboard() {
+  const cats = ['全部','学术','文艺','体育','公益','社交','就业','讲座'];
+  const query = state.searchQuery.toLowerCase();
+  let acts = MOCK_ACTIVITIES.filter(a => a.status === 'published' || a.status === 'completed');
+  if (state.activityFilter !== '全部') acts = acts.filter(a => a.category === state.activityFilter);
+  if (query) acts = acts.filter(a => a.title.toLowerCase().includes(query) || a.tags.some(t => t.includes(query)) || a.college.includes(query));
+
+  return `
+    <div class="section-title mb-24">活动广场</div>
+    <div class="filter-bar">
+      <div class="search-input">
+        <input type="text" placeholder="搜索活动名称、标签..." value="${state.searchQuery}" oninput="state.searchQuery=this.value;render();">
+      </div>
+      ${cats.map(c => `<button class="filter-chip ${state.activityFilter===c?'active':''}" onclick="state.activityFilter='${c}';render();">${c}</button>`).join('')}
+    </div>
+    ${acts.length === 0 ? '<div class="empty-state"><div class="empty-icon">📭</div><p>没有找到相关活动</p></div>' :
+    `<div class="grid-3">
+      ${acts.map((a, i) => renderActivityCard(a, i)).join('')}
+    </div>`}
+  `;
+}
+
+function renderActivityCard(a, idx) {
+  const spots = a.maxCount - a.registeredCount;
+  const full = spots <= 0;
+  const colorIdx = a.id.replace('a','') % COLORS.length;
+  return `
+    <div class="activity-card anim-in anim-in-${idx%6}" onclick="viewActivity('${a.id}')">
+      <div class="activity-card-img" style="background:${COLORS[colorIdx]}">
+        <span class="placeholder-icon">${CAT_ICONS[a.category]||'📌'}</span>
+        <div class="activity-card-badges">
+          <span class="badge badge-blue">${a.category}</span>
+          ${a.hasBonus ? '<span class="badge badge-amber">🎖 可加分</span>' : ''}
+          ${a.fee > 0 ? `<span class="badge badge-purple">¥${a.fee}</span>` : ''}
+        </div>
+      </div>
+      <div class="activity-card-body">
+        <div class="activity-card-title">${a.title}</div>
+        <div class="activity-card-meta">
+          <span>🕐 ${a.startTime}</span>
+          <span>📍 ${a.location}</span>
+          <span>🏫 ${a.college}</span>
+        </div>
+      </div>
+      <div class="activity-card-footer">
+        <div class="spots"><strong>${a.registeredCount}</strong> / ${a.maxCount} 人已报名</div>
+        ${full ? '<span class="badge badge-red">已满</span>' :
+          isRegistered(state.user.id, a.id) ? '<span class="badge badge-green">已报名</span>' : ''}
+      </div>
+    </div>
+  `;
+}
+
+function renderCalendar() {
+  const now = new Date();
+  const year = now.getFullYear(), month = now.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const todayDate = now.getDate();
+  const monthActs = MOCK_ACTIVITIES.filter(a => {
+    const d = new Date(a.startTime);
+    return d.getFullYear() === year && d.getMonth() === month && (a.status === 'published' || a.status === 'completed');
+  });
+
+  let cells = '';
+  for (let i = 0; i < firstDay; i++) cells += '<div class="calendar-cell" style="background:var(--surface-alt)"></div>';
+  for (let d = 1; d <= daysInMonth; d++) {
+    const dayActs = monthActs.filter(a => new Date(a.startTime).getDate() === d);
+    const isToday = d === todayDate;
+    cells += `
+      <div class="calendar-cell ${isToday?'today':''}">
+        <div class="day-num">${d}</div>
+        ${dayActs.map(a => `<div class="event-dot" style="background:var(--accent)" title="${a.title}"></div>`).join('')}
+        ${dayActs.slice(0,2).map(a => `<div style="font-size:.65rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;cursor:pointer" onclick="viewActivity('${a.id}')">${a.title}</div>`).join('')}
+        ${dayActs.length > 2 ? `<div style="font-size:.6rem;color:var(--ink-muted)">+${dayActs.length-2} 更多</div>` : ''}
+      </div>
+    `;
+  }
+
+  return `
+    <div class="flex justify-between items-center mb-24">
+      <div class="section-title">${year}年${month+1}月 活动日历</div>
+    </div>
+    <div style="border:2px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-sm);background:var(--surface)">
+      <div class="calendar-grid">
+        ${['日','一','二','三','四','五','六'].map(d => `<div class="calendar-header-cell">${d}</div>`).join('')}
+        ${cells}
+      </div>
+    </div>
+  `;
+}
+
+function renderMyActivities() {
+  const regs = getRegistrations(state.user.id);
+  if (regs.length === 0) return '<div class="empty-state"><div class="empty-icon">📌</div><p>还没有报名任何活动</p></div>';
+  return `
+    <div class="section-title mb-24">我的报名</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>活动名称</th><th>时间</th><th>地点</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>
+          ${regs.map(r => {
+            const a = getActivity(r.activityId);
+            if (!a) return '';
+            return `<tr>
+              <td style="font-weight:500;cursor:pointer" onclick="viewActivity('${a.id}')">${a.title}</td>
+              <td class="mono text-sm">${a.startTime}</td>
+              <td class="mono text-sm">${a.location}</td>
+              <td><span class="badge ${regStatusBadge(r.status)}">${regStatusLabel(r.status)}</span></td>
+              <td>
+                ${r.status === 'registered' ? `<button class="btn btn-sm btn-danger" onclick="cancelReg('${r.id}')">取消报名</button>` :
+                  r.status === 'completed' && a.hasBonus ? '<span class="badge badge-amber">已加分</span>' : '—'}
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderMyBonus() {
+  const regs = getRegistrations(state.user.id).filter(r => {
+    const a = getActivity(r.activityId);
+    return a && a.hasBonus && (r.status === 'completed' || r.status === 'checked_in');
+  });
+  return `
+    <div class="section-title mb-24">加分记录</div>
+    ${regs.length === 0 ? '<div class="empty-state"><div class="empty-icon">🎖️</div><p>暂无加分记录</p></div>' : `
+    <div class="grid-3 mb-24">
+      <div class="stat-card"><div class="stat-value">${regs.length}</div><div class="stat-label">加分活动</div></div>
+      <div class="stat-card"><div class="stat-value">${regs.reduce((s,r) => s + (getActivity(r.activityId)?.bonusValue||0), 0).toFixed(1)}</div><div class="stat-label">累计加分</div></div>
+      <div class="stat-card"><div class="stat-value">${regs.filter(r=>getActivity(r.activityId)?.bonusType==='志愿时长').reduce((s,r)=>s+(getActivity(r.activityId)?.bonusValue||0),0)}</div><div class="stat-label">志愿时长(h)</div></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>活动</th><th>加分类型</th><th>分值</th><th>时间</th></tr></thead>
+        <tbody>
+          ${regs.map(r => {
+            const a = getActivity(r.activityId);
+            return `<tr>
+              <td style="font-weight:500">${a.title}</td>
+              <td><span class="badge badge-amber">${a.bonusType}</span></td>
+              <td class="mono">+${a.bonusValue}</td>
+              <td class="mono text-sm">${a.startTime}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`}
+  `;
+}
+
+function renderProfile() {
+  const u = state.user;
+  return `
+    <div class="section-title mb-24">个人中心</div>
+    <div style="max-width:560px">
+      <div class="card mb-24">
+        <div class="card-body" style="display:flex;gap:20px;align-items:center">
+          <div class="avatar avatar-lg">${u.avatar}</div>
+          <div>
+            <div style="font-family:var(--font-display);font-size:1.4rem">${u.name}</div>
+            <div class="mono text-sm text-muted">${u.college} · ${u.grade}</div>
+          </div>
+        </div>
+      </div>
+      <div class="card mb-24">
+        <div class="card-header">基本信息</div>
+        <div class="card-body">
+          <div class="form-group"><label>用户名</label><input value="${u.username}" disabled style="background:var(--surface-alt)"></div>
+          <div class="form-group"><label>邮箱</label><input value="${u.email}"></div>
+          <div class="form-group"><label>手机</label><input value="${u.phone}"></div>
+          <div class="form-group"><label>兴趣标签</label>
+            <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
+              ${u.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+              <span class="tag" style="cursor:pointer;border-style:dashed;color:var(--accent)">+ 添加</span>
+            </div>
+          </div>
+          <button class="btn btn-primary mt-8">保存修改</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">账号统计</div>
+        <div class="card-body">
+          <div class="grid-2">
+            <div><div class="mono text-sm text-muted">已报名活动</div><div style="font-family:var(--font-display);font-size:1.6rem">${getRegistrations(u.id).length}</div></div>
+            <div><div class="mono text-sm text-muted">已完成活动</div><div style="font-family:var(--font-display);font-size:1.6rem">${getRegistrations(u.id).filter(r=>r.status==='completed').length}</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ==================== PUBLISHER VIEWS ====================
+function renderPublisherView() {
+  switch(state.view) {
+    case 'dashboard': return renderPublisherDashboard();
+    case 'create-activity': return renderCreateActivity();
+    case 'my-activities': return renderPublisherActivities();
+    case 'registrations': return renderRegistrationManage();
+    case 'profile': return renderProfile();
+    default: return renderPublisherDashboard();
+  }
+}
+
+function renderPublisherDashboard() {
+  const myActs = MOCK_ACTIVITIES.filter(a => a.creatorId === state.user.id);
+  const published = myActs.filter(a => a.status === 'published').length;
+  const pending = myActs.filter(a => a.status === 'pending').length;
+  const totalReg = myActs.reduce((s,a) => s + a.registeredCount, 0);
+  const bonusActs = myActs.filter(a => a.hasBonus).length;
+
+  return `
+    <div class="section-title mb-24">数据概览</div>
+    <div class="grid-4 mb-24">
+      <div class="stat-card anim-in anim-in-1"><div class="stat-value">${myActs.length}</div><div class="stat-label">活动总数</div></div>
+      <div class="stat-card anim-in anim-in-2"><div class="stat-value">${published}</div><div class="stat-label">已发布</div></div>
+      <div class="stat-card anim-in anim-in-3"><div class="stat-value">${totalReg}</div><div class="stat-label">总报名人次</div></div>
+      <div class="stat-card anim-in anim-in-4"><div class="stat-value">${pending}</div><div class="stat-label">待审批</div></div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-header">近期活动</div>
+        <div class="card-body" style="padding:0">
+          ${myActs.slice(0,5).map(a => `
+            <div style="padding:12px 20px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;justify-content:space-between;cursor:pointer" onclick="viewActivity('${a.id}')">
+              <div>
+                <div style="font-weight:500;font-size:.88rem">${a.title}</div>
+                <div class="mono text-xs text-muted">${a.startTime} · ${a.registeredCount}/${a.maxCount}人</div>
+              </div>
+              <span class="badge ${statusBadge(a.status)}">${statusLabel(a.status)}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">快捷操作</div>
+        <div class="card-body">
+          <button class="btn w-full mb-8" onclick="navigate('create-activity')">✚ 发布新活动</button>
+          <button class="btn w-full mb-8" onclick="navigate('my-activities')">📋 管理我的活动</button>
+          <button class="btn w-full" onclick="navigate('registrations')">👥 查看报名数据</button>
+          <div style="margin-top:20px;padding:14px;border:1.5px dashed var(--border-light);border-radius:var(--radius)">
+            <div class="mono text-xs text-muted" style="margin-bottom:4px">💡 提示</div>
+            <div class="text-sm text-muted">作为活动发布者，你可以发布活动供学生报名参与。所有活动需经管理员审批后发布。注意：发布者没有加分权限。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderCreateActivity() {
+  return `
+    <div class="section-title mb-24">发布新活动</div>
+    <div style="max-width:680px">
+      <div class="card">
+        <div class="card-header">活动信息</div>
+        <div class="card-body">
+          <div class="form-group"><label>活动标题 *</label><input id="ca-title" placeholder="请输入活动标题"></div>
+          <div class="form-row">
+            <div class="form-group"><label>活动类型 *</label>
+              <select id="ca-category">
+                <option value="">请选择</option>
+                <option>学术</option><option>文艺</option><option>体育</option>
+                <option>公益</option><option>社交</option><option>就业</option><option>讲座</option><option>其他</option>
+              </select>
+            </div>
+            <div class="form-group"><label>所属单位</label><input id="ca-college" value="${state.user.college}"></div>
+          </div>
+          <div class="form-group"><label>活动描述 *</label><textarea id="ca-desc" rows="5" placeholder="请详细描述活动内容、注意事项等"></textarea></div>
+          <div class="form-row">
+            <div class="form-group"><label>开始时间 *</label><input id="ca-start" type="datetime-local"></div>
+            <div class="form-group"><label>结束时间 *</label><input id="ca-end" type="datetime-local"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>活动地点 *</label><input id="ca-location" placeholder="请输入详细地点"></div>
+            <div class="form-group"><label>人数上限 *</label><input id="ca-max" type="number" placeholder="如：100"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group"><label>报名费用（元）</label><input id="ca-fee" type="number" value="0" placeholder="0为免费"></div>
+            <div class="form-group"><label>标签</label><input id="ca-tags" placeholder="用逗号分隔，如：编程,AI"></div>
+          </div>
+
+          <div style="margin:20px 0;padding:14px;border:1.5px solid var(--border-light);border-radius:var(--radius);background:var(--surface-alt)">
+            <div class="mono text-sm" style="font-weight:500;margin-bottom:6px">🎖 关于加分</div>
+            <div class="text-sm text-muted">活动发布者无法设置加分权限。如需为活动设置加分，请联系校内组织者或管理员进行操作。</div>
+          </div>
+
+          <div class="flex gap-12">
+            <button class="btn btn-primary" onclick="submitActivity('pending')">提交审批</button>
+            <button class="btn" onclick="submitActivity('draft')">保存草稿</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function submitActivity(status) {
+  const title = document.getElementById('ca-title')?.value.trim();
+  const category = document.getElementById('ca-category')?.value;
+  if (!title) { toast('请填写活动标题', 'error'); return; }
+  if (!category) { toast('请选择活动类型', 'error'); return; }
+
+  const newAct = {
+    id: 'a' + (MOCK_ACTIVITIES.length + 1),
+    creatorId: state.user.id,
+    title,
+    category,
+    description: document.getElementById('ca-desc')?.value || '',
+    cover: '',
+    startTime: document.getElementById('ca-start')?.value?.replace('T',' ') || '待定',
+    endTime: document.getElementById('ca-end')?.value?.replace('T',' ') || '待定',
+    location: document.getElementById('ca-location')?.value || '待定',
+    maxCount: parseInt(document.getElementById('ca-max')?.value) || 100,
+    registeredCount: 0,
+    fee: parseFloat(document.getElementById('ca-fee')?.value) || 0,
+    status: status === 'draft' ? 'draft' : 'pending',
+    hasBonus: false,
+    bonusType: '',
+    bonusValue: 0,
+    approvalStatus: status === 'draft' ? 'draft' : 'pending',
+    tags: (document.getElementById('ca-tags')?.value || '').split(',').map(t=>t.trim()).filter(Boolean),
+    createdAt: today(),
+    college: document.getElementById('ca-college')?.value || state.user.college,
+  };
+  MOCK_ACTIVITIES.push(newAct);
+  state.view = 'my-activities';
+  render();
+  toast(status === 'draft' ? '草稿已保存' : '活动已提交审批');
+}
+
+function renderPublisherActivities() {
+  const myActs = MOCK_ACTIVITIES.filter(a => a.creatorId === state.user.id);
+  if (myActs.length === 0) return '<div class="empty-state"><div class="empty-icon">📋</div><p>还没有发布任何活动</p></div>';
+  return `
+    <div class="flex justify-between items-center mb-24">
+      <div class="section-title">我的活动</div>
+      <button class="btn btn-primary" onclick="navigate('create-activity')">✚ 发布活动</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>活动名称</th><th>类型</th><th>时间</th><th>报名</th><th>状态</th><th>加分</th><th>操作</th></tr></thead>
+        <tbody>
+          ${myActs.map(a => `<tr>
+            <td style="font-weight:500;cursor:pointer" onclick="viewActivity('${a.id}')">${a.title}</td>
+            <td><span class="badge badge-blue">${a.category}</span></td>
+            <td class="mono text-sm">${a.startTime}</td>
+            <td class="mono text-sm">${a.registeredCount}/${a.maxCount}</td>
+            <td><span class="badge ${statusBadge(a.status)}">${statusLabel(a.status)}</span></td>
+            <td>${a.hasBonus ? `<span class="badge badge-amber">+${a.bonusValue}</span>` : '<span class="text-muted text-sm">无权限</span>'}</td>
+            <td>
+              ${a.status === 'draft' ? `<button class="btn btn-sm" onclick="editDraft('${a.id}')">编辑</button>` :
+                a.status === 'pending' ? '<span class="text-sm text-muted">审批中</span>' :
+                `<button class="btn btn-sm" onclick="viewActivity('${a.id}')">查看</button>`}
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderRegistrationManage() {
+  const myActs = MOCK_ACTIVITIES.filter(a => a.creatorId === state.user.id && a.status !== 'draft');
+  if (myActs.length === 0) return '<div class="empty-state"><div class="empty-icon">👥</div><p>暂无报名数据</p></div>';
+
+  return `
+    <div class="section-title mb-24">报名管理</div>
+    ${myActs.map(a => {
+      const regs = MOCK_REGISTRATIONS.filter(r => r.activityId === a.id);
+      return `
+        <div class="card mb-16">
+          <div class="card-header">
+            <span>${a.title}</span>
+            <span class="mono text-sm">${regs.length} 人报名</span>
+          </div>
+          ${regs.length === 0 ? '<div class="card-body text-center text-muted mono text-sm" style="padding:20px">暂无报名</div>' : `
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>学生</th><th>院系</th><th>报名时间</th><th>状态</th></tr></thead>
+              <tbody>
+                ${regs.map(r => {
+                  const u = MOCK_USERS.find(x => x.id === r.userId) || {name:'未知',college:'未知'};
+                  return `<tr>
+                    <td style="font-weight:500">${u.name}</td>
+                    <td class="mono text-sm">${u.college}</td>
+                    <td class="mono text-sm">${r.registeredAt}</td>
+                    <td><span class="badge ${regStatusBadge(r.status)}">${regStatusLabel(r.status)}</span></td>
+                  </tr>`;
+                }).join('')}
+              </tbody>
+            </table>
+          </div>`}
+        </div>
+      `;
+    }).join('')}
+  `;
+}
+
+// ==================== ADMIN VIEWS ====================
+function renderAdminView() {
+  switch(state.view) {
+    case 'dashboard': return renderAdminDashboard();
+    case 'approvals': return renderApprovals();
+    case 'all-activities': return renderAllActivities();
+    case 'users': return renderUserManage();
+    case 'publishers': return renderPublisherManage();
+    case 'reports': return renderReports();
+    default: return renderAdminDashboard();
+  }
+}
+
+function renderAdminDashboard() {
+  const totalActs = MOCK_ACTIVITIES.length;
+  const published = MOCK_ACTIVITIES.filter(a => a.status === 'published').length;
+  const pending = MOCK_ACTIVITIES.filter(a => a.status === 'pending').length;
+  const totalUsers = MOCK_USERS.length;
+  const totalRegs = MOCK_REGISTRATIONS.length;
+  const bonusActs = MOCK_ACTIVITIES.filter(a => a.hasBonus).length;
+
+  return `
+    <div class="section-title mb-24">平台概览</div>
+    <div class="grid-4 mb-24">
+      <div class="stat-card anim-in anim-in-1"><div class="stat-value">${totalActs}</div><div class="stat-label">活动总数</div></div>
+      <div class="stat-card anim-in anim-in-2"><div class="stat-value">${published}</div><div class="stat-label">已发布</div></div>
+      <div class="stat-card anim-in anim-in-3"><div class="stat-value">${pending}</div><div class="stat-label">待审批</div></div>
+      <div class="stat-card anim-in anim-in-4"><div class="stat-value">${totalRegs}</div><div class="stat-label">报名总数</div></div>
+    </div>
+    <div class="grid-2 mb-24">
+      <div class="card">
+        <div class="card-header">待审批活动 <span class="badge badge-amber">${pending}</span></div>
+        <div class="card-body" style="padding:0">
+          ${MOCK_ACTIVITIES.filter(a => a.status === 'pending').map(a => `
+            <div style="padding:12px 20px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div style="font-weight:500;cursor:pointer" onclick="viewActivity('${a.id}')">${a.title}</div>
+                <div class="mono text-xs text-muted">${a.college} · ${a.startTime}</div>
+              </div>
+              <div class="flex gap-8">
+                <button class="btn btn-sm btn-green" onclick="approveActivity('${a.id}')">通过</button>
+                <button class="btn btn-sm btn-danger" onclick="rejectActivity('${a.id}')">驳回</button>
+              </div>
+            </div>
+          `).join('') || '<div class="empty-state" style="padding:30px"><p>暂无待审批活动</p></div>'}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">平台统计</div>
+        <div class="card-body">
+          <div style="margin-bottom:16px">
+            <div class="flex justify-between mono text-sm mb-8"><span>活动类型分布</span></div>
+            ${['学术','文艺','体育','公益','社交','就业','讲座'].map(cat => {
+              const count = MOCK_ACTIVITIES.filter(a => a.category === cat).length;
+              const pct = totalActs ? Math.round(count/totalActs*100) : 0;
+              return `<div style="margin-bottom:8px">
+                <div class="flex justify-between mono text-xs"><span>${cat}</span><span>${count} (${pct}%)</span></div>
+                <div class="progress-bar"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+              </div>`;
+            }).join('')}
+          </div>
+          <div style="padding-top:12px;border-top:1px solid var(--border-light)">
+            <div class="grid-2 gap-12">
+              <div><div class="mono text-xs text-muted">加分活动</div><div style="font-family:var(--font-display);font-size:1.3rem">${bonusActs}</div></div>
+              <div><div class="mono text-xs text-muted">总用户数</div><div style="font-family:var(--font-display);font-size:1.3rem">${totalUsers}</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderApprovals() {
+  const pending = MOCK_ACTIVITIES.filter(a => a.status === 'pending');
+  return `
+    <div class="section-title mb-24">活动审批</div>
+    <div class="filter-bar mb-16">
+      <button class="filter-chip active">待审批 (${pending.length})</button>
+      <button class="filter-chip" onclick="navigate('all-activities')">查看全部</button>
+    </div>
+    ${pending.length === 0 ? '<div class="empty-state"><div class="empty-icon">✅</div><p>所有活动已审批完毕</p></div>' :
+    `<div class="table-wrap">
+      <table>
+        <thead><tr><th>活动名称</th><th>发布者</th><th>类型</th><th>时间</th><th>人数</th><th>加分</th><th>操作</th></tr></thead>
+        <tbody>
+          ${pending.map(a => {
+            const creator = MOCK_USERS.find(u => u.id === a.creatorId);
+            return `<tr>
+              <td style="font-weight:500;cursor:pointer" onclick="viewActivity('${a.id}')">${a.title}</td>
+              <td class="mono text-sm">${creator?.name||'—'}</td>
+              <td><span class="badge badge-blue">${a.category}</span></td>
+              <td class="mono text-sm">${a.startTime}</td>
+              <td class="mono text-sm">${a.maxCount}</td>
+              <td>${a.hasBonus ? `<span class="badge badge-amber">${a.bonusType} +${a.bonusValue}</span>` : '—'}</td>
+              <td>
+                <div class="flex gap-8">
+                  <button class="btn btn-sm btn-green" onclick="approveActivity('${a.id}')">通过</button>
+                  <button class="btn btn-sm btn-danger" onclick="rejectActivity('${a.id}')">驳回</button>
+                </div>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>`}
+  `;
+}
+
+function renderAllActivities() {
+  return `
+    <div class="section-title mb-24">全部活动</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>活动名称</th><th>发布者</th><th>类型</th><th>时间</th><th>报名</th><th>加分</th><th>状态</th><th>操作</th></tr></thead>
+        <tbody>
+          ${MOCK_ACTIVITIES.map(a => {
+            const creator = MOCK_USERS.find(u => u.id === a.creatorId);
+            return `<tr>
+              <td style="font-weight:500;cursor:pointer" onclick="viewActivity('${a.id}')">${a.title}</td>
+              <td class="mono text-sm">${creator?.name||'—'}</td>
+              <td><span class="badge badge-blue">${a.category}</span></td>
+              <td class="mono text-sm">${a.startTime}</td>
+              <td class="mono text-sm">${a.registeredCount}/${a.maxCount}</td>
+              <td>${a.hasBonus ? `<span class="badge badge-amber">+${a.bonusValue}</span>` : '—'}</td>
+              <td><span class="badge ${statusBadge(a.status)}">${statusLabel(a.status)}</span></td>
+              <td>
+                ${a.status === 'pending' ? `<div class="flex gap-8"><button class="btn btn-sm btn-green" onclick="approveActivity('${a.id}')">✓</button><button class="btn btn-sm btn-danger" onclick="rejectActivity('${a.id}')">✕</button></div>` :
+                  `<button class="btn btn-sm" onclick="viewActivity('${a.id}')">查看</button>`}
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderUserManage() {
+  return `
+    <div class="section-title mb-24">用户管理</div>
+    <div class="grid-3 mb-24">
+      <div class="stat-card"><div class="stat-value">${MOCK_USERS.length}</div><div class="stat-label">总用户</div></div>
+      <div class="stat-card"><div class="stat-value">${MOCK_USERS.filter(u=>u.role==='student').length}</div><div class="stat-label">学生</div></div>
+      <div class="stat-card"><div class="stat-value">${MOCK_USERS.filter(u=>u.role==='publisher').length}</div><div class="stat-label">发布者</div></div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>用户</th><th>用户名</th><th>角色</th><th>院系</th><th>操作</th></tr></thead>
+        <tbody>
+          ${MOCK_USERS.map(u => `<tr>
+            <td><div class="flex items-center gap-8"><div class="avatar" style="width:28px;height:28px;font-size:.72rem">${u.avatar}</div><span style="font-weight:500">${u.name}</span></div></td>
+            <td class="mono text-sm">${u.username}</td>
+            <td><span class="badge ${u.role==='admin'?'badge-purple':u.role==='publisher'?'badge-amber':'badge-blue'}">${roleLabel(u.role)}</span></td>
+            <td class="mono text-sm">${u.college}</td>
+            <td><button class="btn btn-sm">编辑</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+  `;
+}
+
+function renderPublisherManage() {
+  const publishers = MOCK_USERS.filter(u => u.role === 'publisher');
+  return `
+    <div class="section-title mb-24">发布者管理</div>
+    <div class="grid-3 mb-24">
+      <div class="stat-card"><div class="stat-value">${publishers.length}</div><div class="stat-label">已入驻发布者</div></div>
+      <div class="stat-card"><div class="stat-value">${publishers.filter(p=>MOCK_ACTIVITIES.some(a=>a.creatorId===p.id&&a.status==='published')).length}</div><div class="stat-label">活跃发布者</div></div>
+      <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">待审核入驻</div></div>
+    </div>
+    ${publishers.map(p => {
+      const acts = MOCK_ACTIVITIES.filter(a => a.creatorId === p.id);
+      return `
+        <div class="card mb-16">
+          <div class="card-body" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
+            <div class="flex items-center gap-12">
+              <div class="avatar avatar-lg">${p.avatar}</div>
+              <div>
+                <div style="font-family:var(--font-display);font-size:1.2rem">${p.name}</div>
+                <div class="mono text-sm text-muted">${p.college}</div>
+                <div class="flex gap-6 mt-8">
+                  <span class="badge badge-blue">${acts.length} 个活动</span>
+                  <span class="badge badge-green">${acts.filter(a=>a.status==='published').length} 已发布</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex gap-8">
+              <button class="btn btn-sm">查看详情</button>
+              <button class="btn btn-sm btn-danger">冻结账号</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }).join('')}
+  `;
+}
+
+function renderReports() {
+  const catCounts = {};
+  MOCK_ACTIVITIES.forEach(a => { catCounts[a.category] = (catCounts[a.category]||0) + 1; });
+  const maxCat = Math.max(...Object.values(catCounts), 1);
+
+  return `
+    <div class="section-title mb-24">数据报表</div>
+    <div class="grid-2 mb-24">
+      <div class="card">
+        <div class="card-header">活动类型分布</div>
+        <div class="card-body">
+          ${Object.entries(catCounts).sort((a,b)=>b[1]-a[1]).map(([cat, count]) => `
+            <div style="margin-bottom:12px">
+              <div class="flex justify-between mono text-sm mb-8">
+                <span>${CAT_ICONS[cat]||'📌'} ${cat}</span>
+                <span>${count} 个</span>
+              </div>
+              <div class="progress-bar"><div class="progress-bar-fill" style="width:${Math.round(count/maxCat*100)}%"></div></div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header">报名排行 Top 5</div>
+        <div class="card-body" style="padding:0">
+          ${[...MOCK_ACTIVITIES].sort((a,b)=>b.registeredCount-a.registeredCount).slice(0,5).map((a,i) => `
+            <div style="padding:12px 20px;border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:12px">
+              <span style="font-family:var(--font-display);font-size:1.4rem;color:${i===0?'var(--accent)':i===1?'var(--amber)':'var(--ink-muted)'};width:28px">${i+1}</span>
+              <div style="flex:1">
+                <div style="font-weight:500;font-size:.88rem">${a.title}</div>
+                <div class="mono text-xs text-muted">${a.category} · ${a.college}</div>
+              </div>
+              <span class="mono text-sm" style="font-weight:500">${a.registeredCount}人</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">关键指标</div>
+      <div class="card-body">
+        <div class="grid-4">
+          <div><div class="mono text-xs text-muted">平均报名率</div><div style="font-family:var(--font-display);font-size:1.6rem">${Math.round(MOCK_ACTIVITIES.filter(a=>a.status==='published').reduce((s,a)=>s+a.registeredCount,0)/MOCK_ACTIVITIES.filter(a=>a.status==='published').reduce((s,a)=>s+a.maxCount,0)*100)}%</div></div>
+          <div><div class="mono text-xs text-muted">人均报名</div><div style="font-family:var(--font-display);font-size:1.6rem">${(MOCK_REGISTRATIONS.length/MOCK_USERS.filter(u=>u.role==='student').length).toFixed(1)}</div></div>
+          <div><div class="mono text-xs text-muted">加分覆盖率</div><div style="font-family:var(--font-display);font-size:1.6rem">${Math.round(MOCK_ACTIVITIES.filter(a=>a.hasBonus).length/MOCK_ACTIVITIES.length*100)}%</div></div>
+          <div><div class="mono text-xs text-muted">审批通过率</div><div style="font-family:var(--font-display);font-size:1.6rem">${Math.round(MOCK_ACTIVITIES.filter(a=>a.approvalStatus==='approved').length/MOCK_ACTIVITIES.filter(a=>a.approvalStatus!=='draft').length*100)}%</div></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ==================== ACTIVITY DETAIL ====================
+function renderActivityDetail() {
+  const a = state.selectedActivity;
+  if (!a) return '';
+  const creator = MOCK_USERS.find(u => u.id === a.creatorId);
+  const reg = isRegistered(state.user.id, a.id);
+  const full = a.registeredCount >= a.maxCount;
+  const colorIdx = a.id.replace('a','') % COLORS.length;
+
+  return `
+    <button class="btn btn-ghost mb-16" onclick="state.selectedActivity=null;render();">← 返回</button>
+    <div class="detail-header">
+      <div class="detail-img" style="background:${COLORS[colorIdx]};display:flex;align-items:center;justify-content:center;opacity:1">
+        <span style="font-size:5rem;opacity:.3">${CAT_ICONS[a.category]||'📌'}</span>
+      </div>
+      <div class="detail-info">
+        <div class="flex gap-8 mb-8" style="flex-wrap:wrap">
+          <span class="badge badge-blue">${a.category}</span>
+          <span class="badge ${statusBadge(a.status)}">${statusLabel(a.status)}</span>
+          ${a.hasBonus ? `<span class="badge badge-amber">🎖 ${a.bonusType} +${a.bonusValue}</span>` : ''}
+          ${a.fee > 0 ? `<span class="badge badge-purple">¥${a.fee}</span>` : ''}
+        </div>
+        <h1>${a.title}</h1>
+        <div class="detail-meta">
+          <span class="detail-meta-item">🏫 ${a.college}</span>
+          <span class="detail-meta-item">👤 ${creator?.name || '—'}</span>
+        </div>
+        <div class="detail-meta">
+          <span class="detail-meta-item">🕐 ${a.startTime} ~ ${a.endTime}</span>
+          <span class="detail-meta-item">📍 ${a.location}</span>
+          <span class="detail-meta-item">👥 ${a.registeredCount} / ${a.maxCount} 人</span>
+        </div>
+        <div style="margin:12px 0">
+          <div class="progress-bar" style="height:6px"><div class="progress-bar-fill" style="width:${getProgressPercent(a.registeredCount,a.maxCount)}%;${full?'background:var(--accent)':''}"></div></div>
+        </div>
+        ${state.user.role === 'student' ? `
+        <div class="detail-actions">
+          ${a.status === 'completed' ? '<span class="badge badge-gray">活动已结束</span>' :
+            full && !reg ? '<span class="badge badge-red">报名已满</span>' :
+            reg ? `<button class="btn btn-accent" onclick="cancelRegByAct('${a.id}')">取消报名</button>` :
+            `<button class="btn btn-primary" onclick="registerActivity('${a.id}')">立即报名</button>`}
+        </div>` : ''}
+      </div>
+    </div>
+    <div class="grid-2" style="gap:24px">
+      <div>
+        <div class="card mb-16">
+          <div class="card-header">活动详情</div>
+          <div class="card-body">
+            <p style="line-height:1.9;font-size:.92rem">${a.description}</p>
+            ${a.tags.length > 0 ? `<div style="margin-top:16px">${a.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>` : ''}
+          </div>
+        </div>
+        ${a.hasBonus ? `
+        <div class="card">
+          <div class="card-header">加分信息</div>
+          <div class="card-body">
+            <div class="grid-2">
+              <div><div class="mono text-xs text-muted">加分类型</div><div style="font-weight:500;margin-top:4px">${a.bonusType}</div></div>
+              <div><div class="mono text-xs text-muted">加分分值</div><div style="font-weight:500;margin-top:4px">+${a.bonusValue}</div></div>
+            </div>
+          </div>
+        </div>` : ''}
+      </div>
+      <div>
+        <div class="card">
+          <div class="card-header">组织者信息</div>
+          <div class="card-body">
+            <div class="flex items-center gap-12 mb-16">
+              <div class="avatar avatar-lg">${creator?.avatar||'?'}</div>
+              <div>
+                <div style="font-weight:500;font-size:1rem">${creator?.name||'—'}</div>
+                <div class="mono text-sm text-muted">${creator?.college||'—'}</div>
+              </div>
+            </div>
+            <div class="mono text-sm text-muted">${creator?.email||'—'}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ==================== EVENT HANDLERS ====================
+function viewActivity(id) {
+  const a = getActivity(id);
+  if (a) { state.selectedActivity = a; render(); }
+}
+
+function registerActivity(actId) {
+  const a = getActivity(actId);
+  if (!a) return;
+  if (isRegistered(state.user.id, actId)) { toast('你已经报名了', 'error'); return; }
+  if (a.registeredCount >= a.maxCount) { toast('报名已满', 'error'); return; }
+  MOCK_REGISTRATIONS.push({ id:'r'+Date.now(), userId:state.user.id, activityId:actId, status:'registered', registeredAt:today() });
+  a.registeredCount++;
+  MOCK_NOTIFS.unshift({ id:'n'+Date.now(), userId:state.user.id, title:'报名成功', content:`你已成功报名「${a.title}」`, time:new Date().toLocaleString('zh-CN'), read:false });
+  render();
+  toast('报名成功！');
+}
+
+function cancelReg(regId) {
+  const r = MOCK_REGISTRATIONS.find(x => x.id === regId);
+  if (!r) return;
+  const a = getActivity(r.activityId);
+  r.status = 'cancelled';
+  if (a) a.registeredCount = Math.max(0, a.registeredCount - 1);
+  render();
+  toast('已取消报名');
+}
+
+function cancelRegByAct(actId) {
+  const r = MOCK_REGISTRATIONS.find(x => x.userId === state.user.id && x.activityId === actId && x.status === 'registered');
+  if (r) cancelReg(r.id);
+}
+
+function approveActivity(id) {
+  const a = getActivity(id);
+  if (a) { a.status = 'published'; a.approvalStatus = 'approved'; render(); toast('已通过审批'); }
+}
+
+function rejectActivity(id) {
+  const a = getActivity(id);
+  if (a) { a.status = 'rejected'; a.approvalStatus = 'rejected'; render(); toast('已驳回'); }
+}
+
+function editDraft(id) {
+  const a = getActivity(id);
+  if (a) {
+    state.view = 'create-activity';
+    render();
+    setTimeout(() => {
+      const titleEl = document.getElementById('ca-title');
+      if (titleEl) titleEl.value = a.title;
+    }, 50);
+  }
+}
+
+function attachAppEvents() {
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      if (state.showNotifs) { state.showNotifs = false; render(); }
+      else if (state.selectedActivity) { state.selectedActivity = null; render(); }
+      else if (state.sidebarOpen) { state.sidebarOpen = false; render(); }
+    }
+  });
+}
+
+// ==================== INIT ====================
+render();
+</script>
+</body>
+</html>

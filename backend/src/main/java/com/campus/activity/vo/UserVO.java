@@ -12,4 +12,6 @@ public class UserVO {
     private String avatar;
     private String role;
     private String token;
+    private String college;
+    private String grade;
 }

@@ -59,24 +59,41 @@ public class AuthService {
     public UserVO login(LoginDTO loginDTO) {
         Student student = studentMapper.findByStudentNo(loginDTO.getUsername());
 
-        if (student == null) {
-            throw new RuntimeException("学号不存在");
+        if (student != null) {
+            String expectedPassword = student.getStudentNo().substring(student.getStudentNo().length() - 6);
+            if (!loginDTO.getPassword().equals(expectedPassword)) {
+                throw new RuntimeException("学号或密码错误");
+            }
+
+            User user = userMapper.findByUsername(student.getStudentNo());
+            if (user == null) {
+                user = new User();
+                user.setUsername(student.getStudentNo());
+                user.setPassword(passwordEncoder.encode(expectedPassword));
+                user.setNickname(student.getName());
+                user.setRole("USER");
+                user.setStatus(1);
+                userMapper.insert(user);
+            }
+
+            if (user.getStatus() == 0) {
+                throw new RuntimeException("账号已被禁用");
+            }
+
+            String token = jwtUtil.generateToken(user.getId(), user.getUsername(), user.getRole());
+            UserVO userVO = convertToVO(user, token);
+            userVO.setCollege(student.getCollegeName());
+            userVO.setGrade(student.getGrade());
+            return userVO;
         }
 
-        String expectedPassword = student.getStudentNo().substring(student.getStudentNo().length() - 6);
-        if (!loginDTO.getPassword().equals(expectedPassword)) {
-            throw new RuntimeException("学号或密码错误");
-        }
-
-        User user = userMapper.findByUsername(student.getStudentNo());
+        User user = userMapper.findByUsername(loginDTO.getUsername());
         if (user == null) {
-            user = new User();
-            user.setUsername(student.getStudentNo());
-            user.setPassword(passwordEncoder.encode(expectedPassword));
-            user.setNickname(student.getName());
-            user.setRole("USER");
-            user.setStatus(1);
-            userMapper.insert(user);
+            throw new RuntimeException("用户名或学号不存在");
+        }
+
+        if (!passwordEncoder.matches(loginDTO.getPassword(), user.getPassword())) {
+            throw new RuntimeException("用户名或密码错误");
         }
 
         if (user.getStatus() == 0) {
@@ -84,7 +101,6 @@ public class AuthService {
         }
 
         String token = jwtUtil.generateToken(user.getId(), user.getUsername(), user.getRole());
-
         return convertToVO(user, token);
     }
 
