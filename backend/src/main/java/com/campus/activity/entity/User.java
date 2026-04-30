@@ -21,6 +21,8 @@ public class User {
 
     private String role;
 
+    private String club;
+
     private Integer status;
 
     private LocalDateTime createTime;

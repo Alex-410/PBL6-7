@@ -4,7 +4,7 @@
 <div class="section-title">活动日历 · {{ currentYear }}年{{ currentMonth + 1 }}月</div>
 <div class="flex gap-8">
 <button class="btn btn-sm" @click="prevMonth">← 上月</button>
-<button class="btn btn-sm" @click="today" :disabled="isCurrentMonth">今天</button>
+<button class="btn btn-sm" @click="goToday" :disabled="isCurrentMonth">今天</button>
 <button class="btn btn-sm" @click="nextMonth">下月 →</button>
 </div>
 </div>
@@ -21,7 +21,7 @@
 <div class="event-title" v-for="act in getDayActivities(d).slice(0, 2)" :key="'t'+act.id" @click.stop="$emit('viewActivity', act.id)">
 {{ act.title.length > 8 ? act.title.slice(0, 8) + '…' : act.title }}
 </div>
-<div class="event-more" v-if="getDayActivities(d).length > 2" @click.stop="showDayDetail(getDayActivities(d))">+{{ getDayActivities(d).length - 2 }} 更多</div>
+<div class="event-more" v-if="getDayActivities(d).length > 2" @click.stop="selectedDay=d">+{{ getDayActivities(d).length - 2 }} 更多</div>
 </template>
 </div>
 </div>
@@ -46,12 +46,14 @@
 </div>
 </template>
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { MOCK_ACTIVITIES, CAT_ICONS, COLORS } from '../mock/data'
+import { ref, computed, onMounted } from 'vue'
+import { activityApi } from '../services/api'
+import { adaptActivity } from '../utils/adapters'
 
 defineProps<{ user: any }>()
 const emit = defineEmits(['viewActivity', 'navigate'])
 
+const activities = ref<any[]>([])
 const now = ref(new Date())
 const currentYear = computed(() => now.value.getFullYear())
 const currentMonth = computed(() => now.value.getMonth())
@@ -66,7 +68,7 @@ const daysInMonth = computed(() => new Date(currentYear.value, currentMonth.valu
 const selectedDay = ref<number | null>(null)
 
 const monthActivities = computed(() => {
-  return MOCK_ACTIVITIES.filter(a => {
+  return activities.value.filter(a => {
     if (a.status !== 'published' && a.status !== 'completed') return false
     const d = new Date(a.startTime)
     return d.getFullYear() === currentYear.value && d.getMonth() === currentMonth.value
@@ -89,107 +91,32 @@ function onDayClick(day: number) {
   }
 }
 
-function showDayDetail(activities: any[]) {
-  // handled by modal
-}
+function prevMonth() { now.value = new Date(currentYear.value, currentMonth.value - 1, 1) }
+function nextMonth() { now.value = new Date(currentYear.value, currentMonth.value + 1, 1) }
+function goToday() { now.value = new Date() }
 
-function prevMonth() {
-  now.value = new Date(currentYear.value, currentMonth.value - 1, 1)
-}
-function nextMonth() {
-  now.value = new Date(currentYear.value, currentMonth.value + 1, 1)
-}
-function today() {
-  now.value = new Date()
-}
+onMounted(async () => {
+  try {
+    const res = await activityApi.list()
+    if (res.code === 200) activities.value = (res.data || []).map(adaptActivity)
+  } catch (e) { console.error('load activities failed', e) }
+})
 </script>
 <style scoped>
-.calendar-wrapper {
-  border: 2px solid var(--border);
-  border-radius: var(--radius);
-  overflow: hidden;
-  box-shadow: var(--shadow-sm);
-  background: var(--surface);
-}
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
-  background: var(--border-light);
-}
-.calendar-header-cell {
-  padding: 10px 8px;
-  text-align: center;
-  font-family: var(--font-mono);
-  font-size: .72rem;
-  font-weight: 500;
-  color: var(--ink-muted);
-  text-transform: uppercase;
-  background: var(--surface-alt);
-}
-.calendar-cell {
-  min-height: 90px;
-  padding: 6px 8px;
-  background: var(--surface);
-  font-family: var(--font-mono);
-  font-size: .72rem;
-  position: relative;
-  cursor: pointer;
-  transition: background .1s;
-}
-.calendar-cell:hover {
-  background: #FAF8F5;
-}
-.calendar-cell-empty {
-  background: var(--surface-alt);
-  cursor: default;
-}
-.calendar-cell-empty:hover {
-  background: var(--surface-alt);
-}
-.calendar-cell-today {
-  background: var(--amber-bg);
-}
-.calendar-cell-today:hover {
-  background: #FFF8E7;
-}
-.day-num {
-  font-weight: 500;
-  margin-bottom: 2px;
-  font-size: .78rem;
-}
-.calendar-events {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
-  margin: 2px 0;
-}
-.event-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.event-title {
-  font-size: .65rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  margin-top: 2px;
-  cursor: pointer;
-  color: var(--ink);
-  line-height: 1.4;
-}
-.event-title:hover {
-  color: var(--accent);
-}
-.event-more {
-  font-size: .6rem;
-  color: var(--ink-muted);
-  cursor: pointer;
-  margin-top: 2px;
-}
-.event-more:hover {
-  color: var(--accent);
-}
+.calendar-wrapper { border: 2px solid var(--border); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow-sm); background: var(--surface); }
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 1px; background: var(--border-light); }
+.calendar-header-cell { padding: 10px 8px; text-align: center; font-family: var(--font-mono); font-size: .72rem; font-weight: 500; color: var(--ink-muted); text-transform: uppercase; background: var(--surface-alt); }
+.calendar-cell { min-height: 90px; padding: 6px 8px; background: var(--surface); font-family: var(--font-mono); font-size: .72rem; position: relative; cursor: pointer; transition: background .1s; }
+.calendar-cell:hover { background: #FAF8F5; }
+.calendar-cell-empty { background: var(--surface-alt); cursor: default; }
+.calendar-cell-empty:hover { background: var(--surface-alt); }
+.calendar-cell-today { background: var(--amber-bg); }
+.calendar-cell-today:hover { background: #FFF8E7; }
+.day-num { font-weight: 500; margin-bottom: 2px; font-size: .78rem; }
+.calendar-events { display: flex; flex-wrap: wrap; gap: 2px; margin: 2px 0; }
+.event-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.event-title { font-size: .65rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; cursor: pointer; color: var(--ink); line-height: 1.4; }
+.event-title:hover { color: var(--accent); }
+.event-more { font-size: .6rem; color: var(--ink-muted); cursor: pointer; margin-top: 2px; }
+.event-more:hover { color: var(--accent); }
 </style>

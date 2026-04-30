@@ -1,7 +1,8 @@
 <template>
 <div>
 <div class="section-title mb-24">加分记录</div>
-<div v-if="regs.length===0" class="empty-state"><div class="empty-icon">🎖️</div><p>暂无加分记录</p></div>
+<div v-if="loading" class="empty-state"><p>加载中...</p></div>
+<div v-else-if="regs.length===0" class="empty-state"><div class="empty-icon">🎖️</div><p>暂无加分记录</p></div>
 <template v-else>
 <div class="grid-3 mb-24">
 <div class="stat-card"><div class="stat-value">{{regs.length}}</div><div class="stat-label">加分活动</div></div>
@@ -21,12 +22,28 @@
 </div>
 </template>
 <script setup lang="ts">
-import {computed} from 'vue'
-import {MOCK_ACTIVITIES,MOCK_REGISTRATIONS} from '../mock/data'
-const props=defineProps<{user:any}>()
+import {ref,computed,onMounted} from 'vue'
+import {activityApi,registrationApi} from '../services/api'
+import {adaptActivity,adaptRegistration} from '../utils/adapters'
+const loading=ref(true)
+const activities=ref<any[]>([])
+const regs=ref<any[]>([])
 defineEmits(['viewActivity','navigate'])
-const regs=computed(()=>MOCK_REGISTRATIONS.filter(r=>{const a=getAct(r.activityId);return r.userId===props.user.id&&a?.hasBonus&&['completed','checked_in'].includes(r.status)}))
+function getAct(id:string){return activities.value.find(a=>a.id===id)}
 const total=computed(()=>regs.value.reduce((s,r)=>s+(getAct(r.activityId)?.bonusValue||0),0).toFixed(1))
 const volHours=computed(()=>regs.value.filter(r=>getAct(r.activityId)?.bonusType==='志愿时长').reduce((s,r)=>s+(getAct(r.activityId)?.bonusValue||0),0))
-function getAct(id:string){return MOCK_ACTIVITIES.find(a=>a.id===id)}
+onMounted(async()=>{
+try{
+const[actRes,regRes]=await Promise.all([activityApi.list(),registrationApi.myRegistrations()])
+if(actRes.code===200)activities.value=(actRes.data||[]).map(adaptActivity)
+if(regRes.code===200){
+const all=(regRes.data||[]).map(adaptRegistration)
+regs.value=all.filter((r:any)=>{
+const a=activities.value.find(x=>x.id===r.activityId)
+return a?.hasBonus&&['completed','checked_in'].includes(r.status)
+})
+}
+}catch(e){console.error('load failed',e)}
+finally{loading.value=false}
+})
 </script>

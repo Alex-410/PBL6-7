@@ -11,6 +11,7 @@ public class Student {
     private Integer age;
     private String gender;
     private String collegeName;
+    private String club;
     private String majorName;
     private String classNo;
     private String enrollmentYear;

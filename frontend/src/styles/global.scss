@@ -56,6 +56,7 @@ th{font-family:var(--font-mono);font-weight:500;background:var(--surface-alt);po
 .badge-blue{color:var(--blue);border-color:var(--blue);background:var(--blue-bg)}
 .badge-purple{color:var(--purple);border-color:var(--purple);background:var(--purple-bg)}
 .badge-gray{color:var(--ink-muted);border-color:var(--border-light);background:var(--surface-alt)}
+.badge-orange{color:#C2410C;border-color:#FB923C;background:#FFF7ED}
 
 .card{background:var(--surface);border:2px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;transition:transform .15s,box-shadow .15s}
 .card:hover{transform:translate(-2px,-2px);box-shadow:5px 5px 0 var(--border)}

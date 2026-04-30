@@ -13,7 +13,7 @@
 <div class="form-group"><label>手机</label><input :value="user.phone"></div>
 <div class="form-group"><label>兴趣标签</label>
 <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px">
-<span class="tag" v-for="t in user.tags" :key="t">{{t}}</span>
+<span class="tag" v-for="t in (user.tags||[])" :key="t">{{t}}</span>
 <span class="tag" style="cursor:pointer;border-style:dashed;color:var(--accent)">+ 添加</span>
 </div></div>
 <button class="btn btn-primary mt-8">保存修改</button>
@@ -26,10 +26,20 @@
 </div>
 </template>
 <script setup lang="ts">
-import {computed} from 'vue'
-import {MOCK_REGISTRATIONS} from '../mock/data'
-const props=defineProps<{user:any}>()
+import {ref,onMounted} from 'vue'
+import {registrationApi} from '../services/api'
+defineProps<{user:any}>()
 defineEmits(['viewActivity','navigate'])
-const regCount=computed(()=>MOCK_REGISTRATIONS.filter(r=>r.userId===props.user.id).length)
-const doneCount=computed(()=>MOCK_REGISTRATIONS.filter(r=>r.userId===props.user.id&&r.status==='completed').length)
+const regCount=ref(0)
+const doneCount=ref(0)
+onMounted(async()=>{
+try{
+const res=await registrationApi.myRegistrations()
+if(res.code===200){
+const regs=res.data||[]
+regCount.value=regs.length
+doneCount.value=regs.filter((r:any)=>r.status==='completed').length
+}
+}catch(e){console.error(e)}
+})
 </script>

@@ -104,7 +104,7 @@ const registerForm = reactive({
 const demoAccounts = [
   { name: '张小明', role: '学生', username: '20230102526', password: '102526' },
   { name: '李管理', role: '管理员', username: 'testuser', password: 'password123' },
-  { name: '王组织', role: '活动发布者', username: 'publisher', password: '123456' },
+  { name: '王组织', role: '活动发布者', username: 'test11', password: '123456' },
 ]
 
 function fillLogin(acc: typeof demoAccounts[0]) {

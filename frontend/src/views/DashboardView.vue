@@ -51,6 +51,9 @@ const AdminUserManage=defineAsyncComponent(()=>import('../components/AdminUserMa
 const AdminReports=defineAsyncComponent(()=>import('../components/AdminReports.vue'))
 const AdminPublishers=defineAsyncComponent(()=>import('../components/AdminPublishers.vue'))
 const PublisherDashboard=defineAsyncComponent(()=>import('../components/PublisherDashboard.vue'))
+const PublisherCreateActivity=defineAsyncComponent(()=>import('../components/PublisherCreateActivity.vue'))
+const PublisherMyActivities=defineAsyncComponent(()=>import('../components/PublisherMyActivities.vue'))
+const PublisherRegistrations=defineAsyncComponent(()=>import('../components/PublisherRegistrations.vue'))
 const router=useRouter()
 const cu=ref<any>({})
 const view=ref('dashboard')
@@ -99,12 +102,19 @@ if(view.value==='reports')return AdminReports
 if(view.value==='publishers')return AdminPublishers
 return AdminDashboard
 }
-if(r==='publisher')return PublisherDashboard
+if(r==='publisher'){
+if(view.value==='dashboard')return PublisherDashboard
+if(view.value==='create-activity')return PublisherCreateActivity
+if(view.value==='my-activities')return PublisherMyActivities
+if(view.value==='registrations')return PublisherRegistrations
+if(view.value==='profile')return ProfileView
+return PublisherDashboard
+}
 return StudentDashboard
 })
-function go(v:string){view.value=v;sidebarOpen.value=false;showNotif.value=false;selectedAct.value=null}
-function viewAct(id:string){selectedAct.value=id;view.value='activity-detail'}
-function logout(){localStorage.removeItem('token');localStorage.removeItem('user');router.push('/')}
+function go(v:string){view.value=v;sidebarOpen.value=false;showNotif.value=false;selectedAct.value=null;sessionStorage.removeItem('selectedActivity')}
+function viewAct(id:string){sessionStorage.setItem('selectedActivity',id);selectedAct.value=id;view.value='activity-detail'}
+function logout(){sessionStorage.removeItem('selectedActivity');localStorage.removeItem('token');localStorage.removeItem('user');router.push('/')}
 onMounted(()=>{
 const s=localStorage.getItem('user')
 if(s){

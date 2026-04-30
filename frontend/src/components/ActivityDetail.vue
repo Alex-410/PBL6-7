@@ -1,10 +1,11 @@
 <template>
 <div>
 <button class="btn btn-ghost mb-16" @click="$emit('navigate','dashboard')">← 返回</button>
-<div v-if="!a" class="empty-state"><p>活动未找到</p></div>
+<div v-if="loading" class="empty-state"><p>加载中...</p></div>
+<div v-else-if="!a" class="empty-state"><p>活动未找到</p></div>
 <template v-else>
 <div class="detail-header">
-<div class="detail-img" :style="{background:colors[Number(a.id.replace('a',''))%colors.length]}">
+<div class="detail-img" :style="{background:colors[Number(a.id)%colors.length]}">
 <span style="font-size:5rem;opacity:.3">{{icons[a.category]||'📌'}}</span>
 </div>
 <div class="detail-info">
@@ -13,11 +14,12 @@
 <span class="badge" :class="sb(a.status)">{{sl(a.status)}}</span>
 <span class="badge badge-amber" v-if="a.hasBonus">🎖 {{a.bonusType}} +{{a.bonusValue}}</span>
 <span class="badge badge-purple" v-if="a.fee>0">¥{{a.fee}}</span>
+<span class="badge badge-orange" v-if="a.registrationLimitType==='college'">🎓 限{{a.registrationLimitValue}}报名</span>
+<span class="badge badge-orange" v-else-if="a.registrationLimitType==='club'">🏅 限{{a.registrationLimitValue}}报名</span>
 </div>
 <h1 style="font-family:var(--font-display);font-size:2rem;margin-bottom:8px">{{a.title}}</h1>
 <div class="detail-meta">
 <span class="detail-meta-item">🏫 {{a.college}}</span>
-<span class="detail-meta-item">👤 {{creator?.name||'—'}}</span>
 </div>
 <div class="detail-meta">
 <span class="detail-meta-item">🕐 {{a.startTime}} ~ {{a.endTime}}</span>
@@ -27,9 +29,13 @@
 <div style="margin:12px 0"><div class="progress-bar" style="height:6px"><div class="progress-bar-fill" :style="{width:pct+'%',...(full?{background:'var(--accent)'}:{})}"></div></div></div>
 <div v-if="user.role==='student'" class="detail-actions">
 <span v-if="a.status==='completed'" class="badge badge-gray">活动已结束</span>
-<span v-else-if="full&&!reg" class="badge badge-red">报名已满</span>
-<button v-else-if="reg" class="btn btn-accent" @click="cancelReg">取消报名</button>
+<span v-else-if="full&&!isReg" class="badge badge-red">报名已满</span>
+<button v-else-if="isReg" class="btn btn-accent" @click="cancelReg">取消报名</button>
 <button v-else class="btn btn-primary" @click="doReg">立即报名</button>
+</div>
+<div v-if="errMsg" style="margin-top:12px;padding:10px 14px;border-radius:var(--radius);font-size:.82rem;background:var(--accent-bg);color:var(--accent);display:flex;align-items:center;gap:8px">
+<span>⚠️ {{errMsg}}</span>
+<button class="btn btn-sm btn-ghost" style="margin-left:auto" @click="errMsg=''">✕</button>
 </div>
 </div>
 </div>
@@ -45,45 +51,61 @@
 </div></div></div>
 </div>
 <div><div class="card"><div class="card-header">组织者信息</div><div class="card-body">
-<div class="flex items-center gap-12 mb-16"><div class="avatar avatar-lg">{{creator?.avatar||'?'}}</div><div>
-<div style="font-weight:500;font-size:1rem">{{creator?.name||'—'}}</div>
-<div class="mono text-sm text-muted">{{creator?.college||'—'}}</div>
+<div class="flex items-center gap-12 mb-16"><div class="avatar avatar-lg">👤</div><div>
+<div style="font-weight:500;font-size:1rem">{{a.organizer}}</div>
+<div class="mono text-sm text-muted">{{a.college}}</div>
 </div></div>
-<div class="mono text-sm text-muted">{{creator?.email||'—'}}</div>
 </div></div></div>
 </div>
 </template>
 </div>
 </template>
 <script setup lang="ts">
-import {computed} from 'vue'
-import {MOCK_ACTIVITIES,MOCK_REGISTRATIONS,MOCK_USERS,MOCK_NOTIFICATIONS,COLORS,CAT_ICONS,statusLabel,statusBadge,today} from '../mock/data'
-const props=defineProps<{user:any}>()
+import {ref,computed,onMounted} from 'vue'
+import {activityApi,registrationApi} from '../services/api'
+import {adaptActivity} from '../utils/adapters'
+import {COLORS,CAT_ICONS,statusLabel,statusBadge} from '../mock/data'
+defineProps<{user:any}>()
 const emit=defineEmits(['viewActivity','navigate'])
+const loading=ref(true)
+const activity=ref<any>(null)
+const regId=ref<string|null>(null)
+const errMsg=ref('')
 const colors=COLORS;const icons=CAT_ICONS;const sl=statusLabel;const sb=statusBadge
-const actId=computed(()=>{const last=MOCK_ACTIVITIES.find(x=>true);return last?.id||''})
-// We receive activityId via a reactive approach - find the selected one
-const a=computed(()=>{
-// Get from the last navigation - we use a simple trick: find the activity that was clicked
-// In real app this would be a prop or route param
-const stored=sessionStorage.getItem('selectedActivity')
-return stored?MOCK_ACTIVITIES.find(x=>x.id===stored):null
-})
-const creator=computed(()=>a.value?MOCK_USERS.find(u=>u.id===a.value!.creatorId):null)
+const a=computed(()=>activity.value)
 const full=computed(()=>a.value?(a.value.registeredCount>=a.value.maxCount):false)
-const pct=computed(()=>a.value?Math.min(100,Math.round(a.value.registeredCount/a.value.maxCount*100)):0)
-const reg=computed(()=>a.value?MOCK_REGISTRATIONS.some(r=>r.userId===props.user.id&&r.activityId===a.value!.id&&['registered','checked_in','completed'].includes(r.status)):false)
-function doReg(){
-if(!a.value)return
-MOCK_REGISTRATIONS.push({id:'r'+Date.now(),userId:props.user.id,activityId:a.value.id,status:'registered',registeredAt:today()})
-a.value.registeredCount++
-MOCK_NOTIFICATIONS.unshift({id:'n'+Date.now(),userId:props.user.id,title:'报名成功',content:`你已成功报名「${a.value.title}」`,time:new Date().toLocaleString('zh-CN'),read:false})
+const pct=computed(()=>a.value&&a.value.maxCount>0?Math.min(100,Math.round(a.value.registeredCount/a.value.maxCount*100)):0)
+const isReg=computed(()=>regId.value!==null)
+async function load(){
+const actId=sessionStorage.getItem('selectedActivity')
+if(!actId){loading.value=false;return}
+try{
+const[actRes,regRes]=await Promise.all([activityApi.detail(Number(actId)),registrationApi.myRegistrations()])
+if(actRes.code===200&&actRes.data){activity.value=adaptActivity(actRes.data)}
+if(regRes.code===200){
+const match=(regRes.data||[]).find((r:any)=>String(r.activityId)===actId&&['registered','checked_in','completed'].includes(r.status))
+regId.value=match?String(match.id):null
 }
-function cancelReg(){
-if(!a.value)return
-const r=MOCK_REGISTRATIONS.find(x=>x.userId===props.user.id&&x.activityId===a.value!.id&&x.status==='registered')
-if(r){r.status='cancelled';a.value.registeredCount=Math.max(0,a.value.registeredCount-1)}
+}catch(e){console.error('load detail failed',e)}
+finally{loading.value=false}
 }
+async function doReg(){
+if(!a.value)return
+errMsg.value=''
+try{
+const res=await registrationApi.register(Number(a.value.id))
+if(res.code===200){await load()}
+else{errMsg.value=res.message||'报名失败'}
+}catch(e:any){errMsg.value=e?.response?.data?.message||'报名失败，请重试'}
+}
+async function cancelReg(){
+if(!regId.value)return
+try{
+const res=await registrationApi.cancel(Number(regId.value))
+if(res.code===200){await load()}
+}catch(e){console.error('cancel failed',e)}
+}
+onMounted(load)
 </script>
 <style scoped>
 .detail-header{display:flex;gap:24px;margin-bottom:24px}

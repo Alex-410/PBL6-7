@@ -25,28 +25,32 @@
 </div></div>
 <div style="padding-top:12px;border-top:1px solid var(--border-light)"><div class="grid-2 gap-12">
 <div><div class="mono text-xs text-muted">加分活动</div><div style="font-family:var(--font-display);font-size:1.3rem">{{bonusActs}}</div></div>
-<div><div class="mono text-xs text-muted">总用户数</div><div style="font-family:var(--font-display);font-size:1.3rem">{{totalUsers}}</div></div>
 </div></div>
 </div></div>
 </div>
 </div>
 </template>
 <script setup lang="ts">
-import {computed} from 'vue'
-import {MOCK_ACTIVITIES,MOCK_REGISTRATIONS,MOCK_USERS} from '../mock/data'
+import {ref,computed,onMounted} from 'vue'
+import {activityApi} from '../services/api'
+import {adaptActivity} from '../utils/adapters'
 defineProps<{user:any}>()
 defineEmits(['viewActivity','navigate'])
-const totalActs=computed(()=>MOCK_ACTIVITIES.length)
-const published=computed(()=>MOCK_ACTIVITIES.filter(a=>a.status==='published').length)
-const pending=computed(()=>MOCK_ACTIVITIES.filter(a=>a.status==='pending').length)
-const totalRegs=computed(()=>MOCK_REGISTRATIONS.length)
-const totalUsers=computed(()=>MOCK_USERS.length)
-const bonusActs=computed(()=>MOCK_ACTIVITIES.filter(a=>a.hasBonus).length)
-const pendingActs=computed(()=>MOCK_ACTIVITIES.filter(a=>a.status==='pending'))
+const activities=ref<any[]>([])
+const totalActs=computed(()=>activities.value.length)
+const published=computed(()=>activities.value.filter(a=>a.status==='published').length)
+const pending=computed(()=>activities.value.filter(a=>a.status==='pending').length)
+const totalRegs=computed(()=>activities.value.reduce((s,a)=>s+a.registeredCount,0))
+const bonusActs=computed(()=>activities.value.filter(a=>a.hasBonus).length)
+const pendingActs=computed(()=>activities.value.filter(a=>a.status==='pending'))
 const catStats=computed(()=>{
 const cats=['学术','文艺','体育','公益','社交','就业','讲座']
-return cats.map(c=>{const count=MOCK_ACTIVITIES.filter(a=>a.category===c).length;return{name:c,count,pct:totalActs.value?Math.round(count/totalActs.value*100):0}})
+return cats.map(c=>{const count=activities.value.filter(a=>a.category===c).length;return{name:c,count,pct:totalActs.value?Math.round(count/totalActs.value*100):0}})
 })
-function approve(id:string){const a=MOCK_ACTIVITIES.find(x=>x.id===id);if(a){a.status='published';a.approvalStatus='approved'}}
-function reject(id:string){const a=MOCK_ACTIVITIES.find(x=>x.id===id);if(a){a.status='rejected';a.approvalStatus='rejected'}}
+async function approve(id:string){try{await activityApi.audit(Number(id),'approve');await load()}catch(e){console.error(e)}}
+async function reject(id:string){try{await activityApi.audit(Number(id),'reject');await load()}catch(e){console.error(e)}}
+async function load(){
+try{const res=await activityApi.list();if(res.code===200)activities.value=(res.data||[]).map(adaptActivity)}catch(e){console.error(e)}
+}
+onMounted(load)
 </script>

@@ -83,6 +83,7 @@ public class AuthService {
             String token = jwtUtil.generateToken(user.getId(), user.getUsername(), user.getRole());
             UserVO userVO = convertToVO(user, token);
             userVO.setCollege(student.getCollegeName());
+            userVO.setClub(student.getClub());
             userVO.setGrade(student.getGrade());
             return userVO;
         }
@@ -113,6 +114,7 @@ public class AuthService {
         userVO.setNickname(user.getNickname());
         userVO.setAvatar(user.getAvatar());
         userVO.setRole(user.getRole());
+        userVO.setClub(user.getClub());
         userVO.setToken(token);
         return userVO;
     }

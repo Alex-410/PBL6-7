@@ -13,5 +13,6 @@ public class UserVO {
     private String role;
     private String token;
     private String college;
+    private String club;
     private String grade;
 }
