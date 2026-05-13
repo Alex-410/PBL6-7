@@ -44,6 +44,7 @@ export const authApi = {
 
 export const activityApi = {
   list: (status?: string) => api.get('/activities', { params: status ? { status } : {} }),
+  my: () => api.get('/activities/mine'),
   detail: (id: number) => api.get(`/activities/${id}`),
   create: (data: any) => api.post('/activities', data),
   audit: (id: number, action: 'approve' | 'reject', comment?: string) =>
@@ -56,6 +57,17 @@ export const registrationApi = {
   cancel: (id: number) => api.delete(`/registrations/${id}`),
   myRegistrations: () => api.get('/registrations/me'),
   byActivity: (activityId: number) => api.get(`/registrations/activity/${activityId}`),
+};
+
+export const userApi = {
+  list: (role?: string) => api.get('/users', { params: role ? { role } : {} }),
+  detail: (id: number) => api.get(`/users/${id}`),
+  updateStatus: (id: number, status: number) => api.put(`/users/${id}/status`, { status }),
+  updateRole: (id: number, role: string) => api.put(`/users/${id}/role`, { role }),
+};
+
+export const adminApi = {
+  stats: () => api.get('/admin/stats'),
 };
 
 export default api;

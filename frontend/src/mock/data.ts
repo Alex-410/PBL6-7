@@ -62,7 +62,7 @@ export const MOCK_NOTIFICATIONS: Notification[] = [
 ];
 
 // ==================== UTILS ====================
-export const roleLabel = (r: string) => ({ student:'学生', admin:'管理员', publisher:'活动发布者' }[r] || r);
+export const roleLabel = (r: string) => ({ student:'学生', admin:'管理员', publisher:'活动发布者', student_publisher:'学生·发布者' }[r] || r);
 export const statusLabel = (s: string) => ({ published:'已发布', pending:'待审批', rejected:'已驳回', completed:'已结束', cancelled:'已取消', draft:'草稿' }[s] || s);
 export const statusBadge = (s: string) => ({ published:'badge-green', pending:'badge-amber', rejected:'badge-red', completed:'badge-gray', cancelled:'badge-gray', draft:'badge-gray' }[s] || 'badge-gray');
 export const regStatusLabel = (s: string) => ({ registered:'已报名', checked_in:'已签到', completed:'已完成', cancelled:'已取消' }[s] || s);

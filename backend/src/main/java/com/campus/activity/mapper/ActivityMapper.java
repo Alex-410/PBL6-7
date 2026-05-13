@@ -4,6 +4,7 @@ import com.campus.activity.entity.Activity;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
+import java.util.Map;
 
 @Mapper
 public interface ActivityMapper {
@@ -35,4 +36,22 @@ public interface ActivityMapper {
 
     @Select("SELECT * FROM activity WHERE status=#{status} ORDER BY create_time DESC")
     List<Activity> findByStatus(String status);
+
+    @Select("SELECT COUNT(*) FROM activity WHERE status = #{status}")
+    int countByStatus(String status);
+
+    @Select("SELECT COUNT(*) FROM activity WHERE has_bonus = true")
+    int countHasBonus();
+
+    @Select("SELECT category, COUNT(*) AS count FROM activity GROUP BY category ORDER BY count DESC")
+    List<Map<String, Object>> countByCategory();
+
+    @Select("SELECT * FROM activity ORDER BY registered_count DESC LIMIT #{limit}")
+    List<Activity> findTopByRegistrationCount(int limit);
+
+    @Select("SELECT COALESCE(SUM(registered_count), 0) FROM activity WHERE status = 'published'")
+    int sumRegisteredCountPublished();
+
+    @Select("SELECT COALESCE(SUM(max_count), 0) FROM activity WHERE status = 'published'")
+    int sumMaxCountPublished();
 }

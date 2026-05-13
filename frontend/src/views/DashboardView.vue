@@ -64,8 +64,9 @@ const dateStr=computed(()=>todayStr())
 const rl=computed(()=>roleLabel(cu.value.role||''))
 const unread=computed(()=>MOCK_NOTIFICATIONS.filter(n=>n.userId===cu.value.id&&!n.read).length)
 const viewTitle=computed(()=>{
-const m:Record<string,string>={dashboard:cu.value.role==='student'?'活动广场':cu.value.role==='admin'?'平台概览':'数据概览',
-'my-activities':cu.value.role==='student'?'我的报名':'我的活动','my-bonus':'加分记录',profile:'个人中心',
+const isStudent=r=>r==='student'||r==='student_publisher'
+const m:Record<string,string>={dashboard:isStudent(cu.value.role)?'活动广场':cu.value.role==='admin'?'平台概览':'数据概览',
+'my-activities':'我的活动','my-registrations':'我的报名','my-bonus':'加分记录',profile:'个人中心',
 'activity-detail':'活动详情','approvals':'活动审批','all-activities':'全部活动','users':'用户管理',
 'create-activity':'发布活动','registrations':'报名管理','calendar':'日历视图','publishers':'发布者管理','reports':'数据报表'}
 return m[view.value]||'集趣'
@@ -75,12 +76,14 @@ const r=cu.value.role
 if(r==='student')return[{section:'发现',items:[{id:'dashboard',icon:'📋',label:'活动广场'},{id:'calendar',icon:'📅',label:'日历视图'}]},{section:'我的',items:[{id:'my-activities',icon:'📌',label:'我的报名'},{id:'my-bonus',icon:'🎖️',label:'加分记录'},{id:'profile',icon:'👤',label:'个人中心'}]}]
 if(r==='publisher')return[{section:'概览',items:[{id:'dashboard',icon:'📊',label:'数据概览'}]},{section:'活动管理',items:[{id:'create-activity',icon:'✚',label:'发布活动'},{id:'my-activities',icon:'📋',label:'我的活动'},{id:'registrations',icon:'👥',label:'报名管理'}]},{section:'账号',items:[{id:'profile',icon:'👤',label:'账号设置'}]}]
 if(r==='admin')return[{section:'概览',items:[{id:'dashboard',icon:'📊',label:'平台概览'}]},{section:'审核管理',items:[{id:'approvals',icon:'✅',label:'活动审批'},{id:'all-activities',icon:'📋',label:'全部活动'}]},{section:'用户管理',items:[{id:'users',icon:'👥',label:'用户管理'},{id:'publishers',icon:'🏢',label:'发布者管理'}]},{section:'数据',items:[{id:'reports',icon:'📈',label:'数据报表'}]}]
+if(r==='student_publisher')return[{section:'发现',items:[{id:'dashboard',icon:'📋',label:'活动广场'},{id:'calendar',icon:'📅',label:'日历视图'}]},{section:'我的',items:[{id:'my-registrations',icon:'📌',label:'我的报名'},{id:'my-bonus',icon:'🎖️',label:'加分记录'}]},{section:'活动管理',items:[{id:'create-activity',icon:'✚',label:'发布活动'},{id:'my-activities',icon:'📋',label:'我的活动'},{id:'registrations',icon:'👥',label:'报名管理'}]},{section:'账号',items:[{id:'profile',icon:'👤',label:'个人中心'}]}]
 return[]
 })
 const mobileNav=computed(()=>{
 const r=cu.value.role
 if(r==='student')return[{id:'dashboard',icon:'📋',label:'广场'},{id:'calendar',icon:'📅',label:'日历'},{id:'my-activities',icon:'📌',label:'我的'},{id:'profile',icon:'👤',label:'账号'}]
 if(r==='publisher')return[{id:'dashboard',icon:'📊',label:'概览'},{id:'create-activity',icon:'✚',label:'发布'},{id:'my-activities',icon:'📋',label:'活动'},{id:'profile',icon:'👤',label:'我的'}]
+if(r==='student_publisher')return[{id:'dashboard',icon:'📋',label:'广场'},{id:'create-activity',icon:'✚',label:'发布'},{id:'my-registrations',icon:'📌',label:'报名'},{id:'profile',icon:'👤',label:'我的'}]
 return[{id:'dashboard',icon:'📊',label:'概览'},{id:'approvals',icon:'✅',label:'审批'},{id:'all-activities',icon:'📋',label:'活动'},{id:'users',icon:'👥',label:'用户'}]
 })
 const currentComp=computed(()=>{
@@ -110,6 +113,17 @@ if(view.value==='registrations')return PublisherRegistrations
 if(view.value==='profile')return ProfileView
 return PublisherDashboard
 }
+if(r==='student_publisher'){
+if(view.value==='dashboard')return StudentDashboard
+if(view.value==='calendar')return StudentCalendar
+if(view.value==='my-registrations')return StudentActivities
+if(view.value==='my-bonus')return StudentBonus
+if(view.value==='create-activity')return PublisherCreateActivity
+if(view.value==='my-activities')return PublisherMyActivities
+if(view.value==='registrations')return PublisherRegistrations
+if(view.value==='profile')return ProfileView
+return StudentDashboard
+}
 return StudentDashboard
 })
 function go(v:string){view.value=v;sidebarOpen.value=false;showNotif.value=false;selectedAct.value=null;sessionStorage.removeItem('selectedActivity')}
@@ -118,7 +132,7 @@ function logout(){sessionStorage.removeItem('selectedActivity');localStorage.rem
 onMounted(()=>{
 const s=localStorage.getItem('user')
 if(s){
-try{const u=JSON.parse(s);const rawRole=(u.role||'student').toLowerCase();const roleMap:Record<string,string>={user:'student',admin:'admin',publisher:'publisher'};const mappedRole=roleMap[rawRole]||'student';cu.value={...u,role:mappedRole,name:u.nickname||u.username,college:u.college||'未知',grade:u.grade||'—',avatar:u.avatar||u.username?.charAt(0)||'?',tags:u.tags||[]}}catch{router.push('/')}
+try{const u=JSON.parse(s);const rawRole=(u.role||'student').toLowerCase();const roleMap:Record<string,string>={user:'student',admin:'admin',publisher:'publisher',student_publisher:'student_publisher'};const mappedRole=roleMap[rawRole]||'student';cu.value={...u,role:mappedRole,name:u.nickname||u.username,college:u.college||'未知',grade:u.grade||'—',avatar:u.avatar||u.username?.charAt(0)||'?',tags:u.tags||[]}}catch{router.push('/')}
 }else{router.push('/')}
 })
 </script>

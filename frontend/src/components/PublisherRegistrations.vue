@@ -35,7 +35,7 @@ const regsMap=reactive<Record<string,any[]>>({})
 const sl=statusLabel;const sb=statusBadge;const rsl=regStatusLabel;const rsb=regStatusBadge
 async function load(){
 try{
-const actRes=await activityApi.list()
+const actRes=await activityApi.my()
 if(actRes.code===200)activities.value=(actRes.data||[]).map(adaptActivity)
 for(const a of activities.value){
 try{

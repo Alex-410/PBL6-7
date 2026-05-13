@@ -42,7 +42,7 @@ const pubCount=computed(()=>myActs.value.filter(a=>a.status==='published').lengt
 const pendCount=computed(()=>myActs.value.filter(a=>a.status==='pending').length)
 const totalReg=computed(()=>myActs.value.reduce((s,a)=>s+a.registeredCount,0))
 onMounted(async()=>{
-try{const res=await activityApi.list();if(res.code===200)activities.value=(res.data||[]).map(adaptActivity)}catch(e){console.error(e)}
+try{const res=await activityApi.my();if(res.code===200)activities.value=(res.data||[]).map(adaptActivity)}catch(e){console.error(e)}
 finally{loading.value=false}
 })
 </script>

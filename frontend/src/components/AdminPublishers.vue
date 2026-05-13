@@ -6,6 +6,8 @@
 <div class="stat-card"><div class="stat-value">{{activeCount}}</div><div class="stat-label">活跃发布者</div></div>
 <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">待审核入驻</div></div>
 </div>
+<div v-if="loading" class="card mb-16"><div class="card-body text-center mono text-muted">加载中...</div></div>
+<div v-else-if="publishers.length===0" class="card mb-16"><div class="card-body text-center mono text-muted">暂无发布者</div></div>
 <div v-for="p in publishers" :key="p.id" class="card mb-16">
 <div class="card-body" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px">
 <div class="flex items-center gap-12">
@@ -21,18 +23,50 @@
 </div>
 <div class="flex gap-8">
 <button class="btn btn-sm">查看详情</button>
-<button class="btn btn-sm btn-danger">冻结账号</button>
+<button class="btn btn-sm btn-danger" @click="toggleStatus(p)">{{ p.status===0?'解冻账号':'冻结账号' }}</button>
 </div>
 </div>
 </div>
 </div>
 </template>
 <script setup lang="ts">
-import {computed} from 'vue'
-import {MOCK_USERS,MOCK_ACTIVITIES} from '../mock/data'
+import {ref,onMounted,computed} from 'vue'
+import {userApi,activityApi} from '../services/api'
+import {adaptUser,adaptActivity} from '../utils/adapters'
+
 defineProps<{user:any}>()
 defineEmits(['viewActivity','navigate'])
-const publishers=computed(()=>MOCK_USERS.filter(u=>u.role==='publisher'))
-const activeCount=computed(()=>publishers.value.filter(p=>MOCK_ACTIVITIES.some(a=>a.creatorId===p.id&&a.status==='published')).length)
-function getPublisherActs(id:string){return MOCK_ACTIVITIES.filter(a=>a.creatorId===id)}
+
+const publishers=ref<any[]>([])
+const activities=ref<any[]>([])
+const loading=ref(true)
+
+const activeCount=computed(()=>publishers.value.filter(p=>activities.value.some(a=>String(a.userId)===p.id&&a.status==='published')).length)
+
+function getPublisherActs(userId:string){return activities.value.filter(a=>String(a.userId)===userId)}
+
+async function toggleStatus(p:any){
+const newStatus=p.status===0?1:0
+try{
+await userApi.updateStatus(Number(p.id),newStatus)
+p.status=newStatus
+}catch(e:any){
+alert(e?.response?.data?.message||'操作失败')
+}
+}
+
+onMounted(async()=>{
+try{
+const [userRes,actRes]=await Promise.all([
+userApi.list('PUBLISHER'),
+activityApi.list()
+])
+if(userRes.code===200)publishers.value=(userRes.data||[]).map(adaptUser)
+if(actRes.code===200)activities.value=(actRes.data||[]).map(adaptActivity)
+}catch(e){
+console.error('加载发布者数据失败:',e)
+}finally{
+loading.value=false
+}
+})
 </script>

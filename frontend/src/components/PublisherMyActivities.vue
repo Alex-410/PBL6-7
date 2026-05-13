@@ -31,7 +31,7 @@ const activities=ref<any[]>([])
 const sl=statusLabel;const sb=statusBadge
 async function load(){
 try{
-const res=await activityApi.list()
+const res=await activityApi.my()
 if(res.code===200)activities.value=(res.data||[]).map(adaptActivity)
 }catch(e){console.error(e)}
 finally{loading.value=false}

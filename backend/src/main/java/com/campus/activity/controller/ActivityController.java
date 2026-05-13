@@ -29,6 +29,12 @@ public class ActivityController {
         return Result.success(list);
     }
 
+    @GetMapping("/mine")
+    public Result<List<Activity>> myActivities(Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        return Result.success(activityService.findByUserId(userId));
+    }
+
     @GetMapping("/{id}")
     public Result<Activity> detail(@PathVariable Long id) {
         Activity activity = activityService.findById(id);

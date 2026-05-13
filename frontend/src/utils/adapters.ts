@@ -19,3 +19,14 @@ export function adaptRegistration(raw: any) {
     activityId: String(raw.activityId),
   };
 }
+
+export function adaptUser(raw: any) {
+  return {
+    ...raw,
+    id: String(raw.id),
+    name: raw.nickname || raw.username,
+    college: raw.college || raw.club || '—',
+    grade: raw.grade || '—',
+    avatar: raw.avatar || (raw.nickname || raw.username || '?').charAt(0),
+  };
+}

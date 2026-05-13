@@ -29,4 +29,7 @@ public interface RegistrationMapper {
 
     @Update("UPDATE registration SET status=#{status}, registered_at=NOW() WHERE id=#{id}")
     int reactivate(@Param("id") Long id, @Param("status") String status);
+
+    @Select("SELECT COUNT(*) FROM registration")
+    int countAll();
 }
