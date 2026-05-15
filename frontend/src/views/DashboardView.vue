@@ -43,6 +43,7 @@ const StudentCalendar=defineAsyncComponent(()=>import('../components/StudentCale
 const StudentActivities=defineAsyncComponent(()=>import('../components/StudentActivities.vue'))
 const StudentBonus=defineAsyncComponent(()=>import('../components/StudentBonus.vue'))
 const StudentAIRecommend=defineAsyncComponent(()=>import('../components/StudentAIRecommend.vue'))
+const StudentAIChat=defineAsyncComponent(()=>import('../components/StudentAIChat.vue'))
 const ProfileView=defineAsyncComponent(()=>import('../components/ProfileView.vue'))
 const ActivityDetail=defineAsyncComponent(()=>import('../components/ActivityDetail.vue'))
 const AdminDashboard=defineAsyncComponent(()=>import('../components/AdminDashboard.vue'))
@@ -70,12 +71,12 @@ const m:Record<string,string>={dashboard:isStudent(cu.value.role)?'活动广场'
 'my-activities':'我的活动','my-registrations':'我的报名','my-bonus':'加分记录',profile:'个人中心',
 'activity-detail':'活动详情','approvals':'活动审批','all-activities':'全部活动','users':'用户管理',
 'create-activity':'发布活动','registrations':'报名管理','calendar':'日历视图','publishers':'发布者管理','reports':'数据报表',
-'ai-recommend':'AI智能推荐'}
+'ai-recommend':'AI智能推荐','ai-chat':'AI聊天助手'}
 return m[view.value]||'集趣'
 })
 const navSections=computed(()=>{
 const r=cu.value.role
-if(r==='student')return[{section:'发现',items:[{id:'dashboard',icon:'📋',label:'活动广场'},{id:'calendar',icon:'📅',label:'日历视图'},{id:'ai-recommend',icon:'🤖',label:'AI推荐'}]},{section:'我的',items:[{id:'my-activities',icon:'📌',label:'我的报名'},{id:'my-bonus',icon:'🎖️',label:'加分记录'},{id:'profile',icon:'👤',label:'个人中心'}]}]
+if(r==='student')return[{section:'发现',items:[{id:'dashboard',icon:'📋',label:'活动广场'},{id:'calendar',icon:'📅',label:'日历视图'},{id:'ai-recommend',icon:'🤖',label:'AI推荐'},{id:'ai-chat',icon:'💬',label:'AI聊天'}]},{section:'我的',items:[{id:'my-activities',icon:'📌',label:'我的报名'},{id:'my-bonus',icon:'🎖️',label:'加分记录'},{id:'profile',icon:'👤',label:'个人中心'}]}]
 if(r==='publisher')return[{section:'概览',items:[{id:'dashboard',icon:'📊',label:'数据概览'}]},{section:'活动管理',items:[{id:'create-activity',icon:'✚',label:'发布活动'},{id:'my-activities',icon:'📋',label:'我的活动'},{id:'registrations',icon:'👥',label:'报名管理'}]},{section:'账号',items:[{id:'profile',icon:'👤',label:'账号设置'}]}]
 if(r==='admin')return[{section:'概览',items:[{id:'dashboard',icon:'📊',label:'平台概览'}]},{section:'审核管理',items:[{id:'approvals',icon:'✅',label:'活动审批'},{id:'all-activities',icon:'📋',label:'全部活动'}]},{section:'用户管理',items:[{id:'users',icon:'👥',label:'用户管理'},{id:'publishers',icon:'🏢',label:'发布者管理'}]},{section:'数据',items:[{id:'reports',icon:'📈',label:'数据报表'}]}]
 if(r==='student_publisher')return[{section:'发现',items:[{id:'dashboard',icon:'📋',label:'活动广场'},{id:'calendar',icon:'📅',label:'日历视图'}]},{section:'我的',items:[{id:'my-registrations',icon:'📌',label:'我的报名'},{id:'my-bonus',icon:'🎖️',label:'加分记录'}]},{section:'活动管理',items:[{id:'create-activity',icon:'✚',label:'发布活动'},{id:'my-activities',icon:'📋',label:'我的活动'},{id:'registrations',icon:'👥',label:'报名管理'}]},{section:'账号',items:[{id:'profile',icon:'👤',label:'个人中心'}]}]
@@ -83,7 +84,7 @@ return[]
 })
 const mobileNav=computed(()=>{
 const r=cu.value.role
-if(r==='student')return[{id:'dashboard',icon:'📋',label:'广场'},{id:'ai-recommend',icon:'🤖',label:'AI'},{id:'my-activities',icon:'📌',label:'我的'},{id:'profile',icon:'👤',label:'账号'}]
+if(r==='student')return[{id:'dashboard',icon:'📋',label:'广场'},{id:'ai-recommend',icon:'🤖',label:'AI'},{id:'ai-chat',icon:'💬',label:'聊天'},{id:'my-activities',icon:'📌',label:'我的'},{id:'profile',icon:'👤',label:'账号'}]
 if(r==='publisher')return[{id:'dashboard',icon:'📊',label:'概览'},{id:'create-activity',icon:'✚',label:'发布'},{id:'my-activities',icon:'📋',label:'活动'},{id:'profile',icon:'👤',label:'我的'}]
 if(r==='student_publisher')return[{id:'dashboard',icon:'📋',label:'广场'},{id:'create-activity',icon:'✚',label:'发布'},{id:'my-registrations',icon:'📌',label:'报名'},{id:'profile',icon:'👤',label:'我的'}]
 return[{id:'dashboard',icon:'📊',label:'概览'},{id:'approvals',icon:'✅',label:'审批'},{id:'all-activities',icon:'📋',label:'活动'},{id:'users',icon:'👥',label:'用户'}]
@@ -97,6 +98,7 @@ if(view.value==='calendar')return StudentCalendar
 if(view.value==='my-activities')return StudentActivities
 if(view.value==='my-bonus')return StudentBonus
 if(view.value==='ai-recommend')return StudentAIRecommend
+if(view.value==='ai-chat')return StudentAIChat
 if(view.value==='profile')return ProfileView
 }
 if(r==='admin'){
