@@ -133,12 +133,12 @@ return StudentDashboard
 })
 function go(v:string){view.value=v;sidebarOpen.value=false;showNotif.value=false;selectedAct.value=null;sessionStorage.removeItem('selectedActivity')}
 function viewAct(id:string){sessionStorage.setItem('selectedActivity',id);selectedAct.value=id;view.value='activity-detail'}
-function logout(){sessionStorage.removeItem('selectedActivity');localStorage.removeItem('token');localStorage.removeItem('user');router.push('/')}
+function logout(){sessionStorage.removeItem('selectedActivity');localStorage.removeItem('token');localStorage.removeItem('user');router.push('/login')}
 onMounted(()=>{
 const s=localStorage.getItem('user')
 if(s){
-try{const u=JSON.parse(s);const rawRole=(u.role||'student').toLowerCase();const roleMap:Record<string,string>={user:'student',admin:'admin',publisher:'publisher',student_publisher:'student_publisher'};const mappedRole=roleMap[rawRole]||'student';cu.value={...u,role:mappedRole,name:u.nickname||u.username,college:u.college||'未知',grade:u.grade||'—',avatar:u.avatar||u.username?.charAt(0)||'?',tags:u.tags||[]}}catch{router.push('/')}
-}else{router.push('/')}
+try{const u=JSON.parse(s);const rawRole=(u.role||'student').toLowerCase();const roleMap:Record<string,string>={user:'student',admin:'admin',publisher:'publisher',student_publisher:'student_publisher'};const mappedRole=roleMap[rawRole]||'student';cu.value={...u,role:mappedRole,name:u.nickname||u.username,college:u.college||'未知',grade:u.grade||'—',avatar:u.avatar||u.username?.charAt(0)||'?',tags:u.tags||[]}}catch{router.push('/login')}
+}else{router.push('/login')}
 })
 </script>
 <style scoped>
