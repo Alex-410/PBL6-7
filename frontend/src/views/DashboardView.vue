@@ -79,14 +79,14 @@ const r=cu.value.role
 if(r==='student')return[{section:'发现',items:[{id:'dashboard',icon:'📋',label:'活动广场'},{id:'calendar',icon:'📅',label:'日历视图'},{id:'ai-recommend',icon:'🤖',label:'AI推荐'},{id:'ai-chat',icon:'💬',label:'AI聊天'}]},{section:'我的',items:[{id:'my-activities',icon:'📌',label:'我的报名'},{id:'my-bonus',icon:'🎖️',label:'加分记录'},{id:'profile',icon:'👤',label:'个人中心'}]}]
 if(r==='publisher')return[{section:'概览',items:[{id:'dashboard',icon:'📊',label:'数据概览'}]},{section:'活动管理',items:[{id:'create-activity',icon:'✚',label:'发布活动'},{id:'my-activities',icon:'📋',label:'我的活动'},{id:'registrations',icon:'👥',label:'报名管理'}]},{section:'账号',items:[{id:'profile',icon:'👤',label:'账号设置'}]}]
 if(r==='admin')return[{section:'概览',items:[{id:'dashboard',icon:'📊',label:'平台概览'}]},{section:'审核管理',items:[{id:'approvals',icon:'✅',label:'活动审批'},{id:'all-activities',icon:'📋',label:'全部活动'}]},{section:'用户管理',items:[{id:'users',icon:'👥',label:'用户管理'},{id:'publishers',icon:'🏢',label:'发布者管理'}]},{section:'数据',items:[{id:'reports',icon:'📈',label:'数据报表'}]}]
-if(r==='student_publisher')return[{section:'发现',items:[{id:'dashboard',icon:'📋',label:'活动广场'},{id:'calendar',icon:'📅',label:'日历视图'}]},{section:'我的',items:[{id:'my-registrations',icon:'📌',label:'我的报名'},{id:'my-bonus',icon:'🎖️',label:'加分记录'}]},{section:'活动管理',items:[{id:'create-activity',icon:'✚',label:'发布活动'},{id:'my-activities',icon:'📋',label:'我的活动'},{id:'registrations',icon:'👥',label:'报名管理'}]},{section:'账号',items:[{id:'profile',icon:'👤',label:'个人中心'}]}]
+if(r==='student_publisher')return[{section:'发现',items:[{id:'dashboard',icon:'📋',label:'活动广场'},{id:'calendar',icon:'📅',label:'日历视图'},{id:'ai-recommend',icon:'🤖',label:'AI推荐'},{id:'ai-chat',icon:'💬',label:'AI聊天'}]},{section:'我的',items:[{id:'my-registrations',icon:'📌',label:'我的报名'},{id:'my-bonus',icon:'🎖️',label:'加分记录'}]},{section:'活动管理',items:[{id:'create-activity',icon:'✚',label:'发布活动'},{id:'my-activities',icon:'📋',label:'我的活动'},{id:'registrations',icon:'👥',label:'报名管理'}]},{section:'账号',items:[{id:'profile',icon:'👤',label:'个人中心'}]}]
 return[]
 })
 const mobileNav=computed(()=>{
 const r=cu.value.role
 if(r==='student')return[{id:'dashboard',icon:'📋',label:'广场'},{id:'ai-recommend',icon:'🤖',label:'AI'},{id:'ai-chat',icon:'💬',label:'聊天'},{id:'my-activities',icon:'📌',label:'我的'},{id:'profile',icon:'👤',label:'账号'}]
 if(r==='publisher')return[{id:'dashboard',icon:'📊',label:'概览'},{id:'create-activity',icon:'✚',label:'发布'},{id:'my-activities',icon:'📋',label:'活动'},{id:'profile',icon:'👤',label:'我的'}]
-if(r==='student_publisher')return[{id:'dashboard',icon:'📋',label:'广场'},{id:'create-activity',icon:'✚',label:'发布'},{id:'my-registrations',icon:'📌',label:'报名'},{id:'profile',icon:'👤',label:'我的'}]
+if(r==='student_publisher')return[{id:'dashboard',icon:'📋',label:'广场'},{id:'ai-recommend',icon:'🤖',label:'AI'},{id:'ai-chat',icon:'💬',label:'聊天'},{id:'create-activity',icon:'✚',label:'发布'},{id:'my-registrations',icon:'📌',label:'报名'},{id:'profile',icon:'👤',label:'我的'}]
 return[{id:'dashboard',icon:'📊',label:'概览'},{id:'approvals',icon:'✅',label:'审批'},{id:'all-activities',icon:'📋',label:'活动'},{id:'users',icon:'👥',label:'用户'}]
 })
 const currentComp=computed(()=>{
@@ -119,6 +119,8 @@ if(view.value==='profile')return ProfileView
 return PublisherDashboard
 }
 if(r==='student_publisher'){
+if(view.value==='ai-recommend')return StudentAIRecommend
+if(view.value==='ai-chat')return StudentAIChat
 if(view.value==='dashboard')return StudentDashboard
 if(view.value==='calendar')return StudentCalendar
 if(view.value==='my-registrations')return StudentActivities
