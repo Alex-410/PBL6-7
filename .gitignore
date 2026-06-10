@@ -19,3 +19,19 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Claude Code
+.claude/
+
+# Environment variables
+.env
+campus-rag/.env
+
+# Python
+__pycache__/
+*.pyc
+campus-rag/__pycache__/
+
+# Runtime data
+campus-rag/rag_data/
+campus-rag/vector_db/

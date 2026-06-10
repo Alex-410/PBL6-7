@@ -16,17 +16,14 @@ if env_path.exists():
     from dotenv import load_dotenv
     load_dotenv(env_path)
 
-# Try project-local vector_db first, fallback to user home
+# Always use user home for vector_db (avoids Chinese path issues with FAISS)
 PROJECT_DIR = os.path.dirname(__file__)
 LOCAL_VECTOR_DB = os.path.join(PROJECT_DIR, 'vector_db')
 USER_DATA_DIR = os.path.join(os.path.expanduser('~'), 'campus-rag-data')
+os.makedirs(USER_DATA_DIR, exist_ok=True)
 
-# Use local vector_db if it exists, otherwise use user home
-if os.path.exists(os.path.join(LOCAL_VECTOR_DB, 'faiss_index.index')):
-    RAG_DATA_DIR = LOCAL_VECTOR_DB
-else:
-    RAG_DATA_DIR = USER_DATA_DIR
-    os.makedirs(RAG_DATA_DIR, exist_ok=True)
+# Always use user home to avoid Chinese path encoding issues
+RAG_DATA_DIR = USER_DATA_DIR
 
 FAISS_INDEX_FILE = os.path.join(RAG_DATA_DIR, 'faiss_index')
 DOCS_FILE = os.path.join(RAG_DATA_DIR, 'documents.json')
@@ -836,7 +833,21 @@ def delete_message():
     for c in conversations:
         if c['id'] == conv_id:
             if 0 <= msg_index < len(c['messages']):
-                c['messages'].pop(msg_index)
+                msg_role = c['messages'][msg_index].get('role', '')
+                # 删除用户消息时，同时删除对应的 AI 回复
+                if msg_role == 'user' and msg_index + 1 < len(c['messages']):
+                    if c['messages'][msg_index + 1].get('role') == 'assistant':
+                        del c['messages'][msg_index:msg_index + 2]
+                    else:
+                        del c['messages'][msg_index]
+                # 删除 AI 回复时，同时删除对应的用户消息
+                elif msg_role == 'assistant' and msg_index - 1 >= 0:
+                    if c['messages'][msg_index - 1].get('role') == 'user':
+                        del c['messages'][msg_index - 1:msg_index + 1]
+                    else:
+                        del c['messages'][msg_index]
+                else:
+                    del c['messages'][msg_index]
                 save_conversations(conversations)
                 return jsonify({'success': True, 'messages': c['messages']})
             break
