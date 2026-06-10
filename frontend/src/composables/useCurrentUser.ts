@@ -7,20 +7,20 @@ export function useCurrentUser(){
   const cu=ref<any>({})
   function load(){
     const s=localStorage.getItem('user')
-    if(!s){router.push('/');return}
+    if(!s){router.push('/login');return}
     try{
       const u=JSON.parse(s)
       const rawRole=(u.role||'student').toLowerCase()
       const roleMap:Record<string,string>={user:'student',admin:'admin',publisher:'publisher',student_publisher:'student_publisher'}
       const mappedRole=roleMap[rawRole]||'student'
       cu.value={...u,role:mappedRole,name:u.nickname||u.username,college:u.college||'未知',grade:u.grade||'—',avatar:u.avatar||u.username?.charAt(0)||'?',tags:u.tags||[]}
-    }catch{router.push('/')}
+    }catch{router.push('/login')}
   }
   function logout(){
     sessionStorage.removeItem('selectedActivity')
     localStorage.removeItem('token')
     localStorage.removeItem('user')
-    router.push('/')
+    router.push('/login')
   }
   return {cu,load,logout}
 }

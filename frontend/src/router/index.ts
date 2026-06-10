@@ -18,7 +18,8 @@ export function normalizeRole(raw: string): string {
 const router = createRouter({
   history: createWebHistory(),
   routes: [
-    { path: '/', name: 'auth', component: () => import('../views/AuthView.vue') },
+    { path: '/', name: 'home', component: () => import('../views/HomepageView.vue') },
+    { path: '/login', name: 'auth', component: () => import('../views/AuthView.vue') },
     { path: '/student', name: 'student', meta: { role: 'student' }, component: () => import('../views/StudentDashboardView.vue') },
     { path: '/publisher', name: 'publisher', meta: { role: 'publisher' }, component: () => import('../views/PublisherDashboardView.vue') },
     { path: '/admin', name: 'admin', meta: { role: 'admin' }, component: () => import('../views/AdminDashboardView.vue') },
@@ -26,9 +27,10 @@ const router = createRouter({
   ]
 })
 
-// 路由守卫：校验登录态 + 角色与目标路由匹配
+// 路由守卫：公开页放行；角色页校验登录态 + 角色与目标路由匹配
 router.beforeEach((to) => {
-  if (to.name === 'auth') return true
+  // 公开页面：首页、登录页直接放行
+  if (to.name === 'home' || to.name === 'auth') return true
   const raw = localStorage.getItem('user')
   if (!raw) return { name: 'auth' }
   let role = 'student'
