@@ -57,7 +57,8 @@
           <div class="msg-avatar">{{ msg.role === 'user' ? '👤' : '📖' }}</div>
           <div class="msg-body">
             <div class="msg-header">
-              <div class="msg-bubble">{{ msg.content }}</div>
+              <div v-if="msg.role === 'assistant'" class="msg-bubble markdown-body" v-html="renderMarkdown(msg.content)"></div>
+              <div v-else class="msg-bubble">{{ msg.content }}</div>
               <button class="msg-delete" @click="deleteMessage(index)" title="删除此消息">×</button>
             </div>
             <!-- RAG/LLM indicator -->
@@ -244,6 +245,14 @@
 
 <script setup lang="ts">
 import { ref, nextTick, onMounted, reactive } from 'vue'
+import MarkdownIt from 'markdown-it'
+
+const md = new MarkdownIt({
+  html: false,
+  linkify: true,
+  typographer: true,
+  breaks: true
+})
 
 const RAG_API = 'http://localhost:9001'
 
@@ -308,6 +317,11 @@ const suggestions = [
 
 const formatTime = () => {
   return new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+}
+
+const renderMarkdown = (text: string) => {
+  if (!text) return ''
+  return md.render(text)
 }
 
 const scrollToBottom = () => {
@@ -932,6 +946,80 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+/* Markdown 渲染样式 */
+.markdown-body {
+  line-height: 1.7;
+}
+
+.markdown-body p {
+  margin: 0 0 10px 0;
+}
+
+.markdown-body p:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body strong {
+  font-weight: 600;
+  color: var(--accent, #6B4C3B);
+}
+
+.markdown-body ol,
+.markdown-body ul {
+  margin: 8px 0;
+  padding-left: 24px;
+}
+
+.markdown-body li {
+  margin-bottom: 6px;
+}
+
+.markdown-body li:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body code {
+  background: rgba(0, 0, 0, 0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  font-family: var(--font-mono, monospace);
+}
+
+.markdown-body pre {
+  background: rgba(0, 0, 0, 0.06);
+  padding: 12px;
+  border-radius: 6px;
+  overflow-x: auto;
+  margin: 8px 0;
+}
+
+.markdown-body pre code {
+  background: none;
+  padding: 0;
+}
+
+.markdown-body blockquote {
+  border-left: 3px solid var(--accent, #6B4C3B);
+  padding-left: 12px;
+  margin: 8px 0;
+  color: var(--ink-muted, #666);
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4 {
+  margin: 12px 0 8px 0;
+  font-weight: 600;
+}
+
+.markdown-body hr {
+  border: none;
+  border-top: 1px solid var(--border-light, #e8e0d6);
+  margin: 12px 0;
 }
 
 .loading-dots {
