@@ -19,7 +19,7 @@
 
     <div class="recommend-result" v-else-if="recommendations.length > 0">
       <div 
-        v-for="(item, index) in recommendations" 
+        v-for="item in recommendations"
         :key="item.activity.id" 
         class="activity-card"
         @click="viewActivity(item.activity.id)"
