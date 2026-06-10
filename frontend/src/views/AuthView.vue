@@ -10,6 +10,7 @@
         <h2 v-if="isLogin">登录</h2>
         <h2 v-else>注册</h2>
         <p class="subtitle" v-if="isLogin">使用你的平台账号登录</p>
+        <p class="subtitle" v-if="isLogin">学生可以直接使用学号进行登录,初始密码为学号后六位</p>
         <p class="subtitle" v-else>创建你的平台账号</p>
 
         <!-- 登录表单 -->
@@ -82,6 +83,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { authApi } from '../services/api'
+import { ROLE_ROUTE, normalizeRole } from '../router'
 
 const router = useRouter()
 const isLogin = ref(true)
@@ -120,6 +122,12 @@ function showToast(msg: string, type: 'success' | 'error' = 'success') {
   setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300) }, 2500)
 }
 
+// 根据登录返回的角色跳转到对应的角色页面
+function goByRole(data: any) {
+  const role = normalizeRole(data.role)
+  router.push(ROLE_ROUTE[role] || '/student')
+}
+
 async function handleLogin() {
   if (!loginForm.username || !loginForm.password) {
     showToast('请输入用户名和密码', 'error')
@@ -132,7 +140,7 @@ async function handleLogin() {
       localStorage.setItem('token', response.data.token)
       localStorage.setItem('user', JSON.stringify(response.data))
       showToast('登录成功')
-      router.push('/dashboard')
+      goByRole(response.data)
     } else {
       showToast(response.message || '登录失败', 'error')
     }
@@ -159,7 +167,7 @@ async function handleRegister() {
       localStorage.setItem('token', response.data.token)
       localStorage.setItem('user', JSON.stringify(response.data))
       showToast('注册成功')
-      router.push('/dashboard')
+      goByRole(response.data)
     } else {
       showToast(response.message || '注册失败', 'error')
     }
