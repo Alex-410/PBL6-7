@@ -16,7 +16,7 @@
           <a class="nav-link" @click.prevent="scrollTo('activities')">校园活动</a>
           <a class="nav-link" @click.prevent="scrollTo('campus')">校园风采</a>
           <router-link class="nav-link accent" to="/login">活动发布</router-link>
-          <a class="nav-link" href="javascript:void(0)" title="敬请期待">工具箱</a>
+          <router-link class="nav-link" to="/school-rules" title="校规知识库">工具箱</router-link>
         </nav>
         <button class="menu-toggle" @click="menuOpen = !menuOpen">☰</button>
       </div>

@@ -24,13 +24,14 @@ const router = createRouter({
     { path: '/publisher', name: 'publisher', meta: { role: 'publisher' }, component: () => import('../views/PublisherDashboardView.vue') },
     { path: '/admin', name: 'admin', meta: { role: 'admin' }, component: () => import('../views/AdminDashboardView.vue') },
     { path: '/student-publisher', name: 'student-publisher', meta: { role: 'student_publisher' }, component: () => import('../views/StudentPublisherDashboardView.vue') },
+    { path: '/school-rules', name: 'school-rules', component: () => import('../components/SchoolRulesRAG.vue') },
   ]
 })
 
 // 路由守卫：公开页放行；角色页校验登录态 + 角色与目标路由匹配
 router.beforeEach((to) => {
-  // 公开页面：首页、登录页直接放行
-  if (to.name === 'home' || to.name === 'auth') return true
+  // 公开页面：首页、登录页、校规知识库直接放行
+  if (to.name === 'home' || to.name === 'auth' || to.name === 'school-rules') return true
   const raw = localStorage.getItem('user')
   if (!raw) return { name: 'auth' }
   let role = 'student'
