@@ -387,18 +387,39 @@ if activity_id:
 
 # TC-018: 删除他人活动
 if activity_id:
+    # 注册另一个用户（"他人"），用其 token 去删除 user A 创建的活动
+    other_ts = str(int(time.time()) + 2)[-4:]
+    other_data = {'username': f'o{other_ts}', 'password': 'Test123456',
+                  'confirmPassword': 'Test123456',
+                  'email': f'o{other_ts}@test.com', 'phone': f'1390004{other_ts}'}
+    other_resp = requests.post(f'{BASE_URL}/auth/register', json=other_data).json()
+    other_token = other_resp.get('data', {}).get('token') if other_resp.get('data') else None
+
     tc = TestCase(
         id='TC-018', module='活动模块', feature='活动删除', name='删除他人活动', priority=5,
-        steps=[f'DELETE {BASE_URL}/activities/{activity_id}', f'Header: Authorization: Bearer {user_token[:30]}... (非创建者)', '检查返回 code'],
+        steps=[
+            f'用户A({test_username}) 已创建活动 id={activity_id}',
+            f'注册用户B(o{other_ts}) 并获取其 token',
+            f'DELETE {BASE_URL}/activities/{activity_id} (使用用户B的 token)',
+            '检查返回 code',
+        ],
         expected='code!=200 或 HTTP 403, 提示无权删除',
         request_detail=f'DELETE {BASE_URL}/activities/{activity_id}'
     )
-    resp = requests.delete(f'{BASE_URL}/activities/{activity_id}', headers=headers)
-    run_test(tc, resp.json().get('code') != 200,
-             actual=f'code={resp.json().get("code")}',
-             bug_desc='任何用户都能删除任意活动，缺少所有权检查',
-             fix_suggestion='1. 删除前验证当前用户是否为活动创建者\n2. 或验证是否为管理员',
-             severity='高')
+    if other_token:
+        other_headers = {'Authorization': f'Bearer {other_token}'}
+        resp = requests.delete(f'{BASE_URL}/activities/{activity_id}', headers=other_headers)
+        run_test(tc, resp.json().get('code') != 200,
+                 actual=f'code={resp.json().get("code")} (用户B尝试删除用户A的活动)',
+                 bug_desc='任何用户都能删除任意活动，缺少所有权检查',
+                 fix_suggestion='1. 删除前验证当前用户是否为活动创建者\n2. 或验证是否为管理员',
+                 severity='高')
+    else:
+        run_test(tc, False,
+                 actual='无法创建第二个测试用户，测试环境准备失败',
+                 bug_desc='无法准备测试环境（注册第二个用户失败）',
+                 fix_suggestion='检查注册接口是否可用',
+                 severity='高')
     print_test_result(tc)
 
 # ============ 报名模块 ============
