@@ -6,6 +6,7 @@ import com.campus.activity.entity.Activity;
 import com.campus.activity.service.ActivityService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -52,6 +53,7 @@ public class ActivityController {
     }
 
     @PutMapping("/{id}/audit")
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<Void> audit(@PathVariable Long id, @RequestParam String action,
                               @RequestParam(required = false) String comment,
                               Authentication authentication) {
