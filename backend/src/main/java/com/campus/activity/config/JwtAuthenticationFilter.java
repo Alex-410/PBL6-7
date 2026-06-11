@@ -38,9 +38,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String username = claims.getSubject();
                 String role = claims.get("role", String.class);
 
+                // 校验用户当前状态：禁用/删除的用户即使持有有效 token 也立即失效
                 User user = userMapper.findById(userId);
-                if (user == null || user.getStatus() == null || user.getStatus() != 1) {
-                    filterChain.doFilter(request, response);
+                if (user == null || user.getStatus() == null || user.getStatus() == 0) {
+                    SecurityContextHolder.clearContext();
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"code\":401,\"message\":\"账号已被禁用或不存在\",\"data\":null}");
                     return;
                 }
 
