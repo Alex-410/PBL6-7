@@ -6,6 +6,7 @@ import com.campus.activity.mapper.ActivityMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.HtmlUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -16,16 +17,21 @@ public class ActivityService {
 
     private final ActivityMapper activityMapper;
 
+    /** 转义用户输入中的 HTML 特殊字符，防止 XSS。null 原样返回。 */
+    private static String esc(String s) {
+        return s == null ? null : HtmlUtils.htmlEscape(s);
+    }
+
     @Transactional
     public Activity create(ActivityDTO dto, Long userId) {
         Activity activity = new Activity();
-        activity.setTitle(dto.getTitle());
-        activity.setCategory(dto.getCategory());
-        activity.setDescription(dto.getDescription());
+        activity.setTitle(esc(dto.getTitle()));
+        activity.setCategory(esc(dto.getCategory()));
+        activity.setDescription(esc(dto.getDescription()));
         activity.setStartTime(dto.getStartTime());
         activity.setEndTime(dto.getEndTime());
-        activity.setLocation(dto.getLocation());
-        activity.setOrganizer(dto.getOrganizer());
+        activity.setLocation(esc(dto.getLocation()));
+        activity.setOrganizer(esc(dto.getOrganizer()));
         activity.setPoster(dto.getPoster());
         activity.setMaxCount(dto.getMaxCount() != null ? dto.getMaxCount() : 0);
         activity.setRegisteredCount(0);
@@ -35,9 +41,9 @@ public class ActivityService {
         activity.setHasBonus(dto.getHasBonus() != null ? dto.getHasBonus() : false);
         activity.setBonusType(dto.getBonusType());
         activity.setBonusValue(dto.getBonusValue());
-        activity.setCollege(dto.getCollege());
-        activity.setClub(dto.getClub());
-        activity.setTags(dto.getTags());
+        activity.setCollege(esc(dto.getCollege()));
+        activity.setClub(esc(dto.getClub()));
+        activity.setTags(esc(dto.getTags()));
         activity.setRegistrationLimitType(dto.getRegistrationLimitType() != null ? dto.getRegistrationLimitType() : "none");
         activity.setRegistrationLimitValue(dto.getRegistrationLimitValue());
 
