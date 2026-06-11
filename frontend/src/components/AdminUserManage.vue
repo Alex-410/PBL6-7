@@ -7,7 +7,9 @@
 <div class="stat-card"><div class="stat-value">{{publisherCount}}</div><div class="stat-label">发布者</div></div>
 </div>
 <div v-if="loading" class="card"><div class="card-body text-center mono text-muted">加载中...</div></div>
-<div v-else class="table-wrap">
+<template v-else>
+<!-- Desktop -->
+<div class="table-wrap desktop-only">
 <table>
 <thead><tr><th>用户</th><th>用户名</th><th>角色</th><th>院系</th><th>操作</th></tr></thead>
 <tbody>
@@ -21,6 +23,24 @@
 </tbody>
 </table>
 </div>
+<!-- Mobile -->
+<div class="mobile-cards mobile-only">
+<div class="mobile-user-card" v-for="u in users" :key="u.id">
+<div class="user-card-header">
+<div class="flex items-center gap-8">
+<div class="avatar" style="width:32px;height:32px;font-size:.8rem">{{u.avatar}}</div>
+<div>
+<div style="font-weight:500;font-size:.9rem">{{u.name}}</div>
+<div class="mono text-xs text-muted">{{u.username}}</div>
+</div>
+</div>
+<span class="badge" :class="u.role==='ADMIN'?'badge-purple':u.role==='PUBLISHER'?'badge-amber':u.role==='STUDENT_PUBLISHER'?'badge-green':'badge-blue'">{{roleLabel(u.role)}}</span>
+</div>
+<div class="user-card-meta mono text-sm text-muted">{{u.college}}</div>
+<button v-if="u.role==='USER'||u.role==='STUDENT_PUBLISHER'" class="btn btn-sm mt-8" :class="u.role==='USER'?'btn-primary':'btn-outline'" @click="changeRole(u)">{{u.role==='USER'?'授予权限':'撤销权限'}}</button>
+</div>
+</div>
+</template>
 </div>
 </template>
 <script setup lang="ts">
@@ -69,3 +89,29 @@ loading.value=false
 }
 })
 </script>
+
+<style scoped>
+.desktop-only { display: block; }
+.mobile-only { display: none; }
+.mobile-user-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.user-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.user-card-meta {
+  font-size: .72rem;
+}
+@media (max-width: 768px) {
+  .desktop-only { display: none; }
+  .mobile-only { display: block; }
+}
+</style>

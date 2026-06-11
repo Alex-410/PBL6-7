@@ -9,7 +9,8 @@
 <div class="stat-card"><div class="stat-value">{{total}}</div><div class="stat-label">累计加分</div></div>
 <div class="stat-card"><div class="stat-value">{{volHours}}</div><div class="stat-label">志愿时长(h)</div></div>
 </div>
-<div class="table-wrap"><table>
+<!-- Desktop table -->
+<div class="table-wrap desktop-only"><table>
 <thead><tr><th>活动</th><th>加分类型</th><th>分值</th><th>时间</th></tr></thead>
 <tbody><tr v-for="r in regs" :key="r.id">
 <td style="font-weight:500">{{getAct(r.activityId)?.title}}</td>
@@ -18,6 +19,17 @@
 <td class="mono text-sm">{{getAct(r.activityId)?.startTime}}</td>
 </tr></tbody>
 </table></div>
+<!-- Mobile cards -->
+<div class="mobile-cards mobile-only">
+<div class="mobile-bonus-card" v-for="r in regs" :key="r.id">
+<div class="bonus-card-title">{{getAct(r.activityId)?.title}}</div>
+<div class="bonus-card-meta">
+<span class="badge badge-amber">{{getAct(r.activityId)?.bonusType}}</span>
+<span class="mono" style="font-weight:600;color:var(--accent)">+{{getAct(r.activityId)?.bonusValue}}</span>
+</div>
+<div class="bonus-card-time mono text-sm text-muted">{{getAct(r.activityId)?.startTime}}</div>
+</div>
+</div>
 </template>
 </div>
 </template>
@@ -47,3 +59,40 @@ return a?.hasBonus&&['completed','checked_in'].includes(r.status)
 finally{loading.value=false}
 })
 </script>
+
+<style scoped>
+.desktop-only { display: block; }
+.mobile-only { display: none; }
+
+.mobile-bonus-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+}
+
+.bonus-card-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+
+.bonus-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+
+.bonus-card-time {
+  font-size: .72rem;
+}
+
+@media (max-width: 768px) {
+  .desktop-only { display: none; }
+  .mobile-only { display: block; }
+}
+</style>

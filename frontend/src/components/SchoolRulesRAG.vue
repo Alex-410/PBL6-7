@@ -19,8 +19,13 @@
 
     <!-- Main Content -->
     <div class="main-content">
+      <!-- Mobile Sidebar Toggle -->
+      <button class="sidebar-toggle" @click="showSidebar = !showSidebar">
+        {{ showSidebar ? '✕' : '☰' }} 对话
+      </button>
+
       <!-- Conversations Sidebar -->
-      <div class="conversations-sidebar">
+      <div class="conversations-sidebar" :class="{ open: showSidebar }">
         <button class="new-chat-btn" @click="createNewConversation">
           + 新建对话
         </button>
@@ -278,6 +283,7 @@ const loading = ref(false)
 const messagesContainer = ref<HTMLElement | null>(null)
 const conversationId = ref('')
 const conversations = ref<any[]>([])
+const showSidebar = ref(false)
 
 // Status
 const status = reactive<any>({
@@ -357,6 +363,7 @@ const loadConversations = async () => {
 
 const switchConversation = async (convId: string) => {
   conversationId.value = convId
+  showSidebar.value = false
   try {
     const msgRes = await fetch(`${RAG_API}/api/rag/conversations/${convId}/messages/`)
     const msgData = await msgRes.json()
@@ -618,11 +625,12 @@ onMounted(() => {
 
 <style scoped>
 .rag-page {
-  min-height: 100vh;
+  height: 100vh;
   background: var(--bg, #F5F1EB);
   display: flex;
   flex-direction: column;
   font-family: var(--font-body, 'Noto Serif SC', Georgia, serif);
+  overflow: hidden;
 }
 
 /* Header */
@@ -801,6 +809,7 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
   max-width: 960px;
   width: 100%;
   margin: 0 auto;
@@ -814,7 +823,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  min-height: 400px;
 }
 
 /* Welcome */
@@ -1153,6 +1161,8 @@ onMounted(() => {
   display: flex;
   gap: 12px;
   padding: 16px 0 24px;
+  flex-shrink: 0;
+  background: var(--bg, #F5F1EB);
 }
 
 .chat-input textarea {
@@ -1556,12 +1566,30 @@ onMounted(() => {
   padding: 20px;
 }
 
+/* Sidebar Toggle (mobile) */
+.sidebar-toggle {
+  display: none;
+  position: fixed;
+  bottom: 80px;
+  left: 16px;
+  z-index: 25;
+  padding: 10px 16px;
+  background: var(--accent, #6B4C3B);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .rag-header {
     flex-direction: column;
     gap: 8px;
     text-align: center;
+    padding: 12px 16px;
   }
 
   .header-actions {
@@ -1571,13 +1599,35 @@ onMounted(() => {
 
   .main-content {
     flex-direction: column;
+    position: relative;
+  }
+
+  .sidebar-toggle {
+    display: flex;
   }
 
   .conversations-sidebar {
+    display: none;
     width: 100%;
-    max-height: 200px;
+    max-height: 50vh;
     border-right: none;
     border-bottom: 1px solid var(--border-light, #e8e0d6);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    background: var(--surface, #fff);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .conversations-sidebar.open {
+    display: flex;
+  }
+
+  .chat-container {
+    width: 100%;
+    padding: 0 12px;
   }
 
   .message {
@@ -1586,6 +1636,7 @@ onMounted(() => {
 
   .chat-input {
     flex-direction: column;
+    padding: 12px 0 16px;
   }
 
   .chat-input button {
@@ -1598,6 +1649,16 @@ onMounted(() => {
 
   .chunk-config {
     flex-direction: column;
+  }
+
+  .modal {
+    width: 95%;
+    max-height: 90vh;
+    margin: 10px;
+  }
+
+  .modal-body {
+    padding: 16px;
   }
 }
 </style>

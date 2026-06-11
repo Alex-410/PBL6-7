@@ -413,7 +413,7 @@ onMounted(() => {
 
 @media (max-width: 768px) {
   .ai-chat {
-    height: calc(100vh - 100px);
+    height: calc(100vh - 140px);
   }
   
   .message {
@@ -425,6 +425,15 @@ onMounted(() => {
   }
   
   .chat-input button {
+    width: 100%;
+  }
+
+  .model-selector {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .model-select {
     width: 100%;
   }
 }
