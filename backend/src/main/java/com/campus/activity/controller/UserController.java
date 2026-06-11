@@ -4,6 +4,7 @@ import com.campus.activity.common.Result;
 import com.campus.activity.service.UserService;
 import com.campus.activity.vo.UserVO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +18,7 @@ public class UserController {
     private final UserService userService;
 
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<List<UserVO>> list(@RequestParam(required = false) String role) {
         List<UserVO> users;
         if (role != null && !role.isEmpty()) {
@@ -28,6 +30,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public Result<UserVO> detail(@PathVariable Long id) {
         UserVO user = userService.findById(id);
         if (user == null) {

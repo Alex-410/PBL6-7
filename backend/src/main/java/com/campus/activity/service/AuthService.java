@@ -13,6 +13,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 @Service
 @RequiredArgsConstructor
 public class AuthService {
@@ -21,6 +23,10 @@ public class AuthService {
     private final StudentMapper studentMapper;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+
+    private static final int MAX_LOGIN_ATTEMPTS = 5;
+    private static final long LOCK_TIME_MS = 15 * 60 * 1000;
+    private final ConcurrentHashMap<String, long[]> loginAttempts = new ConcurrentHashMap<>();
 
     @Transactional
     public UserVO register(RegisterDTO registerDTO) {
@@ -57,11 +63,13 @@ public class AuthService {
     }
 
     public UserVO login(LoginDTO loginDTO) {
+        checkLoginRateLimit(loginDTO.getUsername());
         Student student = studentMapper.findByStudentNo(loginDTO.getUsername());
 
         if (student != null) {
             String expectedPassword = student.getStudentNo().substring(student.getStudentNo().length() - 6);
             if (!loginDTO.getPassword().equals(expectedPassword)) {
+                recordLoginFailure(loginDTO.getUsername());
                 throw new RuntimeException("学号或密码错误");
             }
 
@@ -85,15 +93,18 @@ public class AuthService {
             userVO.setCollege(student.getCollegeName());
             userVO.setClub(student.getClub());
             userVO.setGrade(student.getGrade());
+            resetLoginAttempts(loginDTO.getUsername());
             return userVO;
         }
 
         User user = userMapper.findByUsername(loginDTO.getUsername());
         if (user == null) {
+            recordLoginFailure(loginDTO.getUsername());
             throw new RuntimeException("用户名或学号不存在");
         }
 
         if (!passwordEncoder.matches(loginDTO.getPassword(), user.getPassword())) {
+            recordLoginFailure(loginDTO.getUsername());
             throw new RuntimeException("用户名或密码错误");
         }
 
@@ -102,6 +113,7 @@ public class AuthService {
         }
 
         String token = jwtUtil.generateToken(user.getId(), user.getUsername(), user.getRole());
+        resetLoginAttempts(loginDTO.getUsername());
         return convertToVO(user, token);
     }
 
@@ -117,6 +129,34 @@ public class AuthService {
         userVO.setClub(user.getClub());
         userVO.setToken(token);
         return userVO;
+    }
+
+    private void checkLoginRateLimit(String username) {
+        long[] record = loginAttempts.get(username);
+        if (record != null) {
+            long elapsed = System.currentTimeMillis() - record[1];
+            if ((int) record[0] >= MAX_LOGIN_ATTEMPTS && elapsed < LOCK_TIME_MS) {
+                long waitMinutes = (LOCK_TIME_MS - elapsed) / 60000 + 1;
+                throw new RuntimeException("登录尝试次数过多，请" + waitMinutes + "分钟后重试");
+            }
+            if (elapsed >= LOCK_TIME_MS) {
+                loginAttempts.remove(username);
+            }
+        }
+    }
+
+    private void recordLoginFailure(String username) {
+        loginAttempts.compute(username, (k, v) -> {
+            if (v == null) {
+                return new long[]{1, System.currentTimeMillis()};
+            }
+            v[0]++;
+            return v;
+        });
+    }
+
+    private void resetLoginAttempts(String username) {
+        loginAttempts.remove(username);
     }
 }
 
