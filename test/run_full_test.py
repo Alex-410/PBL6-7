@@ -214,9 +214,26 @@ if rag_ok:
     resp = requests.post(f'{RAG_URL}/delete/', json={'filename': 'nonexist.txt'})
     test('TC-027: 删除不存在文档应返回错误', resp.status_code == 400)
 
-# TC-028: chunk_text无限循环风险
-test('TC-028: chunk_text无限循环风险', False,
-     'chunk_size=overlap时fixed策略无限循环 (main.py:104-108)')
+# TC-028: chunk_text无限循环风险 (chunk_size == overlap时应不死循环)
+if rag_ok:
+    try:
+        resp28 = requests.post(f'{RAG_URL}/upload_text/', json={
+            'text': '这是一段测试文本。' * 20,
+            'filename': 'test.txt',
+            'strategy': 'fixed',
+            'chunk_size': 100,
+            'overlap': 100
+        }, timeout=3)
+        test('TC-028: chunk_size==overlap时不应死循环', resp28.status_code == 200,
+             'chunk_size=overlap时fixed策略无限循环 (main.py:104-108)' if resp28.status_code != 200 else None)
+    except requests.exceptions.Timeout:
+        test('TC-028: chunk_size==overlap时不应死循环', False,
+             'chunk_size=overlap时fixed策略无限循环 (main.py:104-108)')
+    except Exception as e:
+        test('TC-028: chunk_size==overlap时不应死循环', False,
+             f'RAG服务请求异常: {e}')
+else:
+    test('TC-028: chunk_size==overlap时不应死循环', False, 'RAG服务未启动，无法测试')
 
 print()
 
@@ -234,8 +251,33 @@ resp = requests.get(f'{BASE_URL}/activities', headers={'Authorization': 'Bearer 
 test('TC-030: JWT篡改防护', resp.status_code in [401, 403])
 
 # TC-031: 禁用用户后token有效性
-test('TC-031: 禁用用户后token仍有效', False,
-     '禁用用户后JWT token仍然有效，缺少token失效机制')
+if user_token:
+    # 注册一个专门用于测试禁用的用户
+    disable_ts = str(int(time.time()))[-4:]
+    disable_data = {'username': f'dis{disable_ts}', 'password': 'Test123456', 'confirmPassword': 'Test123456',
+                    'email': f'dis{disable_ts}@test.com', 'phone': f'1380000{disable_ts}'}
+    resp_d = requests.post(f'{BASE_URL}/auth/register', json=disable_data)
+    rd = resp_d.json()
+    if rd.get('code') == 200 and rd.get('data'):
+        disable_token = rd['data']['token']
+        disable_uid = rd['data']['id']
+        disable_headers = {'Authorization': f'Bearer {disable_token}'}
+        # 确认token有效
+        resp_check = requests.get(f'{BASE_URL}/activities', headers=disable_headers)
+        token_works_before = resp_check.json().get('code') == 200
+        # 禁用该用户
+        requests.put(f'{BASE_URL}/users/{disable_uid}/status', json={'status': 0}, headers=headers)
+        # 再次尝试使用token
+        resp_after = requests.get(f'{BASE_URL}/activities', headers=disable_headers)
+        token_rejected = resp_after.status_code in [401, 403]
+        test('TC-031: 禁用用户后token应失效', token_works_before and token_rejected,
+             '禁用用户后JWT token仍然有效，缺少token失效机制' if not token_rejected else None)
+        # 恢复用户状态
+        requests.put(f'{BASE_URL}/users/{disable_uid}/status', json={'status': 1}, headers=headers)
+    else:
+        test('TC-031: 禁用用户后token应失效', False, '无法创建测试用户')
+else:
+    test('TC-031: 禁用用户后token应失效', False, '无可用token')
 
 # TC-032: XSS防护
 if user_token:
