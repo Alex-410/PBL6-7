@@ -4,6 +4,7 @@ import com.campus.activity.dto.ActivityDTO;
 import com.campus.activity.entity.Activity;
 import com.campus.activity.mapper.ActivityMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.HtmlUtils;
@@ -79,6 +80,22 @@ public class ActivityService {
 
     @Transactional
     public void deleteById(Long id) {
+        activityMapper.deleteById(id);
+    }
+
+    /**
+     * 删除活动，带所有权 + 角色校验。
+     * 管理员可删任何活动，普通用户只能删自己发布的。
+     */
+    @Transactional
+    public void deleteByIdWithAuth(Long id, Long currentUserId, boolean isAdmin) {
+        Activity activity = activityMapper.findById(id);
+        if (activity == null) {
+            throw new RuntimeException("活动不存在");
+        }
+        if (!isAdmin && !currentUserId.equals(activity.getUserId())) {
+            throw new AccessDeniedException("无权删除他人发布的活动");
+        }
         activityMapper.deleteById(id);
     }
 }

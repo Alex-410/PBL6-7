@@ -64,8 +64,11 @@ public class ActivityController {
     }
 
     @DeleteMapping("/{id}")
-    public Result<Void> delete(@PathVariable Long id) {
-        activityService.deleteById(id);
+    public Result<Void> delete(@PathVariable Long id, Authentication authentication) {
+        Long currentUserId = (Long) authentication.getPrincipal();
+        boolean isAdmin = authentication.getAuthorities().stream()
+                .anyMatch(a -> "ROLE_ADMIN".equals(a.getAuthority()));
+        activityService.deleteByIdWithAuth(id, currentUserId, isAdmin);
         return Result.success();
     }
 }
