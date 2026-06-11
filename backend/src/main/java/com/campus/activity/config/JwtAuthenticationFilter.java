@@ -1,5 +1,7 @@
 package com.campus.activity.config;
 
+import com.campus.activity.entity.User;
+import com.campus.activity.mapper.UserMapper;
 import com.campus.activity.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
@@ -22,6 +24,7 @@ import java.util.Collections;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
+    private final UserMapper userMapper;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -34,6 +37,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 Long userId = claims.get("userId", Number.class).longValue();
                 String username = claims.getSubject();
                 String role = claims.get("role", String.class);
+
+                // 校验用户当前状态：禁用/删除的用户即使持有有效 token 也立即失效
+                User user = userMapper.findById(userId);
+                if (user == null || user.getStatus() == null || user.getStatus() == 0) {
+                    SecurityContextHolder.clearContext();
+                    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"code\":401,\"message\":\"账号已被禁用或不存在\",\"data\":null}");
+                    return;
+                }
 
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(userId, null,
