@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>加载中...</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; background: #000; }
+canvas { display: block; position: fixed; top: 0; left: 0; }
+#status {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255,255,255,0.85);
+  font: 14px 'Courier New', monospace;
+  letter-spacing: 3px;
+  text-shadow: 0 0 15px rgba(100,200,255,0.8), 0 0 30px rgba(100,200,255,0.4);
+  z-index: 10;
+  animation: textPulse 2s ease-in-out infinite;
+  white-space: nowrap;
+}
+@keyframes textPulse {
+  0%,100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="status">系统启动中...</div>
+<script>
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+let W, H, t = 0;
+
+function resize() {
+  W = canvas.width = window.innerWidth;
+  H = canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener('resize', resize);
+
+// ====== 星星 ======
+const stars = [];
+for (let i = 0; i < 500; i++) {
+  stars.push({
+    x: Math.random() * 4000 - 2000,
+    y: Math.random() * 2000 - 1000,
+    z: Math.random() * 600 + 100,
+    size: Math.random() * 1.5 + 0.5,
+    bright: Math.random() * 0.6 + 0.4
+  });
+}
+
+function drawStars() {
+  for (let i = 0; i < stars.length; i++) {
+    const s = stars[i];
+    s.z -= 8;
+    if (s.z < 1) {
+      s.z = 600;
+      s.x = Math.random() * 4000 - 2000;
+      s.y = Math.random() * 2000 - 1000;
+    }
+    const px = W / 2 + (s.x / s.z) * 200;
+    const py = H / 2 + (s.y / s.z) * 200;
+    if (px < -10 || px > W + 10 || py < -10 || py > H + 10) continue;
+    const r = s.size * (1 - s.z / 700);
+    const alpha = s.bright * (1 - s.z / 700);
+    const stretch = 1 + 6 / s.z;
+    ctx.fillStyle = 'rgba(200,220,255,' + alpha + ')';
+    ctx.beginPath();
+    ctx.ellipse(px, py, r * stretch, r, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// ====== 速度线 ======
+const speedLines = [];
+for (let i = 0; i < 80; i++) {
+  speedLines.push({
+    x: Math.random() * 3000,
+    y: Math.random() * 1500 - 750,
+    z: Math.random() * 400 + 50,
+    len: Math.random() * 60 + 30
+  });
+}
+
+function drawSpeedLines() {
+  for (let i = 0; i < speedLines.length; i++) {
+    const l = speedLines[i];
+    l.z -= 15;
+    if (l.z < 1) {
+      l.z = 400;
+      l.x = Math.random() * 3000;
+      l.y = Math.random() * 1500 - 750;
+    }
+    const px = W / 2 + (l.x / l.z) * 250;
+    const py = H / 2 + (l.y / l.z) * 250;
+    const len = (l.len / l.z) * 80;
+    const alpha = Math.max(0, 0.12 * (1 - l.z / 400));
+    ctx.strokeStyle = 'rgba(150,180,220,' + alpha + ')';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath();
+    ctx.moveTo(px, py);
+    ctx.lineTo(px - len, py);
+    ctx.stroke();
+  }
+}
+
+// ====== 尾迹 ======
+const contrails = [];
+function addContrail(x, y, spread) {
+  for (let i = 0; i < 2; i++) {
+    contrails.push({
+      x: x + (Math.random() - 0.5) * spread,
+      y: y + (Math.random() - 0.5) * spread,
+      vx: -3 - Math.random() * 2,
+      vy: (Math.random() - 0.5) * 0.6,
+      life: 1,
+      r: Math.random() * 4 + 2
+    });
+  }
+  if (contrails.length > 250) contrails.splice(0, contrails.length - 250);
+}
+
+function drawContrails() {
+  for (let i = contrails.length - 1; i >= 0; i--) {
+    const c = contrails[i];
+    c.life -= 0.015;
+    c.x += c.vx;
+    c.y += c.vy;
+    c.r *= 1.003;
+    if (c.life <= 0) { contrails.splice(i, 1); continue; }
+    ctx.fillStyle = 'rgba(180,200,230,' + (c.life * 0.15) + ')';
+    ctx.beginPath();
+    ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// ====== 热浪 ======
+const heatP = [];
+function addHeat(x, y) {
+  heatP.push({
+    x: x - Math.random() * 20,
+    y: y + (Math.random() - 0.5) * 10,
+    vx: -1 - Math.random(),
+    vy: (Math.random() - 0.5) * 0.8,
+    life: 1,
+    r: Math.random() * 10 + 4
+  });
+  if (heatP.length > 40) heatP.splice(0, heatP.length - 40);
+}
+
+function drawHeat() {
+  for (let i = heatP.length - 1; i >= 0; i--) {
+    const h = heatP[i];
+    h.life -= 0.025;
+    h.x += h.vx;
+    h.y += h.vy;
+    h.r *= 1.008;
+    if (h.life <= 0) { heatP.splice(i, 1); continue; }
+    ctx.strokeStyle = 'rgba(255,200,150,' + (h.life * 0.05) + ')';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.ellipse(h.x, h.y, h.r, h.r * 0.5, Math.sin(t * 8 + h.x) * 0.3, 0, Math.PI * 2);
+    ctx.stroke();
+  }
+}
+
+// ====== 尾焰（参考图中明亮的橙黄色） ======
+function drawAfterburner(cx, cy) {
+  // 核心白色
+  const coreG = ctx.createRadialGradient(cx, cy, 0, cx, cy, 12);
+  coreG.addColorStop(0, 'rgba(255,255,255,0.95)');
+  coreG.addColorStop(0.4, 'rgba(255,240,200,0.7)');
+  coreG.addColorStop(1, 'rgba(255,200,100,0)');
+  ctx.fillStyle = coreG;
+  ctx.beginPath();
+  ctx.ellipse(cx, cy, 10, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 内焰 - 明亮橙黄
+  const iLen = 55 + Math.sin(t * 35) * 8;
+  const iG = ctx.createLinearGradient(cx, cy, cx - iLen, cy);
+  iG.addColorStop(0, 'rgba(255,255,220,0.95)');
+  iG.addColorStop(0.2, 'rgba(255,200,80,0.85)');
+  iG.addColorStop(0.5, 'rgba(255,150,40,0.7)');
+  iG.addColorStop(1, 'rgba(255,100,20,0)');
+  ctx.fillStyle = iG;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - 4);
+  ctx.quadraticCurveTo(cx - iLen * 0.5, cy - 6 - Math.random() * 2, cx - iLen, cy);
+  ctx.quadraticCurveTo(cx - iLen * 0.5, cy + 6 + Math.random() * 2, cx, cy + 4);
+  ctx.fill();
+
+  // 外焰 - 橙红
+  const oLen = 85 + Math.sin(t * 28) * 12;
+  const oG = ctx.createLinearGradient(cx, cy, cx - oLen, cy);
+  oG.addColorStop(0, 'rgba(255,180,60,0.7)');
+  oG.addColorStop(0.3, 'rgba(255,120,30,0.5)');
+  oG.addColorStop(0.7, 'rgba(200,60,15,0.3)');
+  oG.addColorStop(1, 'rgba(150,30,10,0)');
+  ctx.fillStyle = oG;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - 7);
+  ctx.quadraticCurveTo(cx - oLen * 0.4, cy - 10 - Math.random() * 3, cx - oLen, cy);
+  ctx.quadraticCurveTo(cx - oLen * 0.4, cy + 10 + Math.random() * 3, cx, cy + 7);
+  ctx.fill();
+
+  // 最外层 - 暗红渐隐
+  const ooLen = 110 + Math.sin(t * 22) * 15;
+  const ooG = ctx.createLinearGradient(cx, cy, cx - ooLen, cy);
+  ooG.addColorStop(0, 'rgba(180,50,15,0.3)');
+  ooG.addColorStop(0.5, 'rgba(120,25,8,0.15)');
+  ooG.addColorStop(1, 'rgba(80,15,5,0)');
+  ctx.fillStyle = ooG;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - 10);
+  ctx.quadraticCurveTo(cx - ooLen * 0.5, cy - 12, cx - ooLen, cy);
+  ctx.quadraticCurveTo(cx - ooLen * 0.5, cy + 12, cx, cy + 10);
+  ctx.fill();
+
+  // 光晕
+  const haloG = ctx.createRadialGradient(cx - 20, cy, 0, cx - 20, cy, 80);
+  haloG.addColorStop(0, 'rgba(255,180,80,0.08)');
+  haloG.addColorStop(1, 'rgba(255,150,50,0)');
+  ctx.fillStyle = haloG;
+  ctx.fillRect(cx - 100, cy - 80, 160, 160);
+}
+
+// ====== 战斗机 - 1:1复刻参考图 ======
+function drawJet(baseCx, baseCy) {
+  const floatX = Math.sin(t * 1.2) * 10;
+  const floatY = Math.sin(t * 0.8) * 15 + Math.cos(t * 1.5) * 6;
+  const shakeX = (Math.random() - 0.5) * 3;
+  const shakeY = (Math.random() - 0.5) * 2.5;
+  const cx = baseCx + floatX + shakeX;
+  const cy = baseCy + floatY + shakeY;
+
+  addContrail(cx - 100, cy - 4, 5);
+  addContrail(cx - 100, cy + 4, 5);
+  addHeat(cx - 80, cy);
+
+  ctx.save();
+  ctx.translate(cx, cy);
+
+  // ===== 参考图飞机轮廓 =====
+  // 图片中的飞机：机头尖锐向右，深灰色，流线型
+
+  // 机身 - 深灰色，从机头到尾部
+  ctx.fillStyle = '#2a2d32';
+  ctx.beginPath();
+  // 机头（最右端）
+  ctx.moveTo(125, 0);
+  // 机头上缘
+  ctx.lineTo(110, -4);
+  ctx.lineTo(85, -8);
+  ctx.lineTo(60, -10);
+  ctx.lineTo(30, -11);
+  ctx.lineTo(0, -11);
+  ctx.lineTo(-30, -10);
+  ctx.lineTo(-55, -8);
+  ctx.lineTo(-75, -6);
+  ctx.lineTo(-90, -5);
+  // 尾喷口
+  ctx.lineTo(-95, -4);
+  ctx.lineTo(-95, 4);
+  ctx.lineTo(-90, 5);
+  // 尾部下缘
+  ctx.lineTo(-75, 6);
+  ctx.lineTo(-55, 7);
+  ctx.lineTo(-30, 9);
+  ctx.lineTo(0, 10);
+  ctx.lineTo(30, 10);
+  ctx.lineTo(60, 9);
+  ctx.lineTo(85, 7);
+  ctx.lineTo(110, 3);
+  ctx.closePath();
+  ctx.fill();
+
+  // 机身暗面（下半部分更暗）
+  ctx.fillStyle = '#1e2126';
+  ctx.beginPath();
+  ctx.moveTo(125, 0);
+  ctx.lineTo(110, 3);
+  ctx.lineTo(85, 7);
+  ctx.lineTo(60, 9);
+  ctx.lineTo(30, 10);
+  ctx.lineTo(0, 10);
+  ctx.lineTo(-30, 9);
+  ctx.lineTo(-55, 7);
+  ctx.lineTo(-75, 6);
+  ctx.lineTo(-90, 5);
+  ctx.lineTo(-95, 4);
+  ctx.lineTo(-95, 0);
+  ctx.lineTo(125, 0);
+  ctx.closePath();
+  ctx.fill();
+
+  // 机身棱线（上表面高光）
+  ctx.strokeStyle = 'rgba(80,85,95,0.3)';
+  ctx.lineWidth = 0.6;
+  ctx.beginPath();
+  ctx.moveTo(100, -4);
+  ctx.lineTo(-80, -6);
+  ctx.stroke();
+
+  // ===== 主翼 =====
+  // 参考图中机翼是大后掠角三角翼，前缘后掠约50度
+  ctx.fillStyle = '#24272c';
+  // 上翼面
+  ctx.beginPath();
+  ctx.moveTo(15, -11);
+  ctx.lineTo(-15, -50);
+  ctx.lineTo(-35, -52);
+  ctx.lineTo(-55, -45);
+  ctx.lineTo(-50, -9);
+  ctx.closePath();
+  ctx.fill();
+
+  // 翼面暗部
+  ctx.fillStyle = '#1c1f23';
+  ctx.beginPath();
+  ctx.moveTo(15, -11);
+  ctx.lineTo(-15, -50);
+  ctx.lineTo(-30, -48);
+  ctx.lineTo(-35, -25);
+  ctx.lineTo(-50, -9);
+  ctx.closePath();
+  ctx.fill();
+
+  // 翼缘
+  ctx.strokeStyle = 'rgba(70,75,85,0.3)';
+  ctx.lineWidth = 0.5;
+  ctx.beginPath();
+  ctx.moveTo(15, -11);
+  ctx.lineTo(-15, -50);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(-15, -50);
+  ctx.lineTo(-55, -45);
+  ctx.stroke();
+
+  // 下翼面
+  ctx.fillStyle = '#1c1f23';
+  ctx.beginPath();
+  ctx.moveTo(15, 10);
+  ctx.lineTo(-15, 45);
+  ctx.lineTo(-35, 46);
+  ctx.lineTo(-48, 38);
+  ctx.lineTo(-45, 8);
+  ctx.closePath();
+  ctx.fill();
+
+  // ===== 垂尾 =====
+  // 参考图中垂尾是倾斜的梯形，从前向后倾斜
+  ctx.fillStyle = '#2a2d32';
+  ctx.beginPath();
+  ctx.moveTo(-65, -7);
+  ctx.lineTo(-75, -38);
+  ctx.lineTo(-82, -36);
+  ctx.lineTo(-78, -6);
+  ctx.closePath();
+  ctx.fill();
+
+  // 垂尾棱线
+  ctx.strokeStyle = 'rgba(70,75,85,0.25)';
+  ctx.lineWidth = 0.5;
+  ctx.beginPath();
+  ctx.moveTo(-72, -35);
+  ctx.lineTo(-76, -7);
+  ctx.stroke();
+
+  // ===== 水平尾翼 =====
+  ctx.fillStyle = '#24272c';
+  // 上水平尾翼
+  ctx.beginPath();
+  ctx.moveTo(-60, -6);
+  ctx.lineTo(-80, -18);
+  ctx.lineTo(-98, -16);
+  ctx.lineTo(-95, -5);
+  ctx.closePath();
+  ctx.fill();
+
+  // 下水平尾翼
+  ctx.fillStyle = '#1e2126';
+  ctx.beginPath();
+  ctx.moveTo(-60, 6);
+  ctx.lineTo(-80, 16);
+  ctx.lineTo(-95, 14);
+  ctx.lineTo(-92, 5);
+  ctx.closePath();
+  ctx.fill();
+
+  // ===== 座舱盖 =====
+  // 参考图中座舱盖是暗色气泡型，在机身上方，更大更饱满
+  const canopyG = ctx.createLinearGradient(40, -18, 40, -2);
+  canopyG.addColorStop(0, 'rgba(20,35,50,0.95)');
+  canopyG.addColorStop(0.4, 'rgba(40,70,95,0.98)');
+  canopyG.addColorStop(0.7, 'rgba(35,60,85,0.95)');
+  canopyG.addColorStop(1, 'rgba(20,40,55,0.92)');
+  ctx.fillStyle = canopyG;
+  ctx.beginPath();
+  ctx.moveTo(55, -10);
+  ctx.quadraticCurveTo(58, -28, 90, -15);
+  ctx.lineTo(75, -10);
+  ctx.closePath();
+  ctx.fill();
+
+  // 座舱框线
+  ctx.strokeStyle = 'rgba(50,60,70,0.4)';
+  ctx.lineWidth = 0.5;
+  ctx.stroke();
+
+  // 座舱高光
+  ctx.fillStyle = 'rgba(140,180,220,0.18)';
+  ctx.beginPath();
+  ctx.ellipse(70, -16, 9, 3, -0.1, 0, Math.PI * 2);
+  ctx.fill();
+
+  // ===== 机头雷达罩 =====
+  ctx.fillStyle = '#181b20';
+  ctx.beginPath();
+  ctx.moveTo(125, 0);
+  ctx.lineTo(108, -3);
+  ctx.lineTo(108, 2);
+  ctx.closePath();
+  ctx.fill();
+
+  // ===== 进气道 =====
+  // DSI进气道
+  ctx.fillStyle = '#0e1116';
+  ctx.beginPath();
+  ctx.moveTo(30, -11);
+  ctx.lineTo(18, -16);
+  ctx.lineTo(-10, -15);
+  ctx.lineTo(-10, -11);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(30, 10);
+  ctx.lineTo(18, 15);
+  ctx.lineTo(-10, 14);
+  ctx.lineTo(-10, 10);
+  ctx.closePath();
+  ctx.fill();
+
+  // 进气道唇口高光
+  ctx.strokeStyle = 'rgba(80,90,100,0.25)';
+  ctx.lineWidth = 0.8;
+  ctx.beginPath();
+  ctx.moveTo(30, -11);
+  ctx.lineTo(18, -16);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(30, 10);
+  ctx.lineTo(18, 15);
+  ctx.stroke();
+
+  // ===== 尾喷口 =====
+  ctx.fillStyle = '#0c0e12';
+  ctx.beginPath();
+  ctx.ellipse(-95, 0, 7, 4.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // 喷口内热光
+  const exhG = ctx.createRadialGradient(-95, 0, 0, -95, 0, 7);
+  exhG.addColorStop(0, 'rgba(255,150,50,0.8)');
+  exhG.addColorStop(0.5, 'rgba(255,100,30,0.4)');
+  exhG.addColorStop(1, 'rgba(200,60,15,0.1)');
+  ctx.fillStyle = exhG;
+  ctx.beginPath();
+  ctx.ellipse(-95, 0, 5, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // ===== 机身表面细节 =====
+  ctx.strokeStyle = 'rgba(50,55,65,0.2)';
+  ctx.lineWidth = 0.3;
+  // 翼根线
+  ctx.beginPath();
+  ctx.moveTo(15, -11);
+  ctx.lineTo(15, 10);
+  ctx.stroke();
+  // 维护口盖
+  ctx.strokeRect(40, -5, 10, 7);
+  ctx.strokeRect(-5, -6, 8, 8);
+  ctx.strokeRect(-40, -5, 8, 7);
+
+  ctx.restore();
+
+  // 尾焰
+  drawAfterburner(cx - 100, cy);
+}
+
+// ====== 暗角 ======
+function drawVignette() {
+  const g = ctx.createRadialGradient(W / 2, H / 2, W * 0.2, W / 2, H / 2, W * 0.7);
+  g.addColorStop(0, 'rgba(0,0,0,0)');
+  g.addColorStop(1, 'rgba(0,0,0,0.6)');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, W, H);
+}
+
+// ====== 流星 ======
+let meteor = null;
+function drawMeteor() {
+  if (!meteor && Math.random() < 0.003) {
+    meteor = {
+      x: Math.random() * W * 0.7 + W * 0.15,
+      y: Math.random() * H * 0.25,
+      vx: -6 - Math.random() * 4,
+      vy: 2 + Math.random() * 2,
+      life: 1,
+      len: 25 + Math.random() * 35
+    };
+  }
+  if (meteor) {
+    meteor.life -= 0.02;
+    meteor.x += meteor.vx;
+    meteor.y += meteor.vy;
+    if (meteor.life <= 0) { meteor = null; return; }
+    const g = ctx.createLinearGradient(meteor.x, meteor.y, meteor.x + meteor.len, meteor.y - meteor.len * 0.3);
+    g.addColorStop(0, 'rgba(255,255,255,' + (meteor.life * 0.8) + ')');
+    g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.strokeStyle = g;
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(meteor.x, meteor.y);
+    ctx.lineTo(meteor.x + meteor.len, meteor.y - meteor.len * 0.3);
+    ctx.stroke();
+  }
+}
+
+// ====== 光柱 ======
+function drawLightBeams() {
+  const bx = W * 0.45;
+  const by = H * 0.48;
+  const beamG = ctx.createLinearGradient(bx + 100, by, bx + 300, by);
+  beamG.addColorStop(0, 'rgba(100,150,255,0.03)');
+  beamG.addColorStop(1, 'rgba(100,150,255,0)');
+  ctx.fillStyle = beamG;
+  ctx.beginPath();
+  ctx.moveTo(bx + 100, by);
+  ctx.lineTo(bx + 320, by - 60);
+  ctx.lineTo(bx + 320, by + 60);
+  ctx.closePath();
+  ctx.fill();
+}
+
+// ====== 主循环 ======
+function frame() {
+  t += 0.016;
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, W, H);
+
+  drawStars();
+  drawSpeedLines();
+  drawMeteor();
+  drawLightBeams();
+  drawContrails();
+  drawHeat();
+  drawJet(W * 0.45, H * 0.48);
+  drawVignette();
+
+  requestAnimationFrame(frame);
+}
+
+frame();
+
+window.getStatus = function() { return document.getElementById('status').textContent; };
+window.setStatus = function(text) { document.getElementById('status').textContent = text; };
+</script>
+</body>
+</html>

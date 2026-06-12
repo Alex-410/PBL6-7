@@ -17,8 +17,23 @@
       </div>
     </div>
 
+    <!-- RAG 离线提示 -->
+    <div v-if="!ragOnline" class="rag-offline">
+      <div class="offline-content">
+        <div class="offline-icon">⚡</div>
+        <h2>RAG 服务</h2>
+        <p v-if="ragStarting" class="offline-msg">{{ ragStatusMsg }}</p>
+        <p v-else class="offline-msg">{{ ragStatusMsg || '服务未就绪' }}</p>
+        <div v-if="ragStarting" class="loading-bar">
+          <div class="loading-bar-inner"></div>
+        </div>
+        <button v-if="!ragStarting" class="retry-btn" @click="checkAndStartRag">重试连接</button>
+        <router-link to="/" class="back-home">返回首页</router-link>
+      </div>
+    </div>
+
     <!-- Main Content -->
-    <div class="main-content">
+    <div v-else class="main-content">
       <!-- Mobile Sidebar Toggle -->
       <button class="sidebar-toggle" @click="showSidebar = !showSidebar">
         {{ showSidebar ? '✕' : '☰' }} 对话
@@ -250,7 +265,10 @@
 
 <script setup lang="ts">
 import { ref, nextTick, onMounted, reactive } from 'vue'
+import { useRouter } from 'vue-router'
 import MarkdownIt from 'markdown-it'
+
+const router = useRouter()
 
 const md = new MarkdownIt({
   html: false,
@@ -617,9 +635,73 @@ const deleteDoc = async (filename: string) => {
   }
 }
 
+const ragOnline = ref(true)
+const ragStarting = ref(false)
+const ragStatusMsg = ref('')
+
+async function checkAndStartRag() {
+  try {
+    const res = await fetch('/api/rag/check')
+    const data = await res.json()
+    if (data.online) {
+      ragOnline.value = true
+      loadStatus()
+      loadConversations()
+      return
+    }
+  } catch (e) {
+    console.error('检查 RAG 状态失败:', e)
+  }
+
+  // RAG 不在线，尝试启动
+  ragOnline.value = false
+  ragStarting.value = true
+  ragStatusMsg.value = 'RAG 服务未启动，正在尝试启动...'
+
+  try {
+    const startRes = await fetch('/api/rag/start', { method: 'POST' })
+    const startData = await startRes.json()
+
+    if (startData.success) {
+      ragStatusMsg.value = 'RAG 服务启动中，请稍候...'
+      // 轮询等待
+      let attempts = 0
+      const checkInterval = setInterval(async () => {
+        attempts++
+        if (attempts > 60) {
+          clearInterval(checkInterval)
+          ragStatusMsg.value = '启动超时，请刷新页面重试'
+          ragStarting.value = false
+          return
+        }
+        try {
+          const res = await fetch('/api/rag/check')
+          const data = await res.json()
+          if (data.online) {
+            clearInterval(checkInterval)
+            ragOnline.value = true
+            ragStarting.value = false
+            loadStatus()
+            loadConversations()
+          } else {
+            ragStatusMsg.value = `RAG 服务启动中... (${attempts}s)`
+          }
+        } catch (e) {
+          // 继续等待
+        }
+      }, 1000)
+    } else {
+      ragStatusMsg.value = `启动失败: ${startData.message}`
+      ragStarting.value = false
+    }
+  } catch (e) {
+    ragStatusMsg.value = '无法连接后端服务，请检查后端是否启动'
+    ragStarting.value = false
+  }
+}
+
 onMounted(() => {
-  loadStatus()
-  loadConversations()
+  checkAndStartRag()
 })
 </script>
 
@@ -1564,6 +1646,76 @@ onMounted(() => {
   text-align: center;
   color: var(--ink-muted, #888);
   padding: 20px;
+}
+
+/* RAG 离线提示 */
+.rag-offline {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg, #F5F1EB);
+}
+.offline-content {
+  text-align: center;
+  padding: 40px;
+}
+.offline-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+.offline-content h2 {
+  font-family: var(--font-display, 'Noto Serif SC', serif);
+  color: var(--ink, #2D2A26);
+  margin-bottom: 12px;
+}
+.offline-msg {
+  color: var(--ink-muted, #888);
+  font-size: 0.95rem;
+  margin-bottom: 24px;
+}
+.loading-bar {
+  width: 200px;
+  height: 4px;
+  background: var(--border-light, #e8e0d6);
+  border-radius: 2px;
+  margin: 0 auto 24px;
+  overflow: hidden;
+}
+.loading-bar-inner {
+  width: 40%;
+  height: 100%;
+  background: var(--accent, #6B4C3B);
+  border-radius: 2px;
+  animation: loadingSlide 1.5s ease-in-out infinite;
+}
+@keyframes loadingSlide {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(150%); }
+  100% { transform: translateX(-100%); }
+}
+.retry-btn {
+  padding: 10px 24px;
+  background: var(--accent, #6B4C3B);
+  color: white;
+  border: none;
+  border-radius: var(--radius, 6px);
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+  transition: opacity 0.2s;
+}
+.retry-btn:hover {
+  opacity: 0.9;
+}
+.back-home {
+  display: block;
+  color: var(--ink-muted, #888);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+.back-home:hover {
+  color: var(--ink, #2D2A26);
 }
 
 /* Sidebar Toggle (mobile) */

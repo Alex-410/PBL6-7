@@ -16,7 +16,7 @@
           <a class="nav-link" @click.prevent="scrollTo('activities')">校园活动</a>
           <a class="nav-link" @click.prevent="scrollTo('campus')">校园风采</a>
           <router-link class="nav-link accent" to="/login">活动发布</router-link>
-          <router-link class="nav-link" to="/school-rules" title="校规知识库">工具箱</router-link>
+          <a class="nav-link" @click.prevent="openToolbox" title="校规知识库">工具箱</a>
         </nav>
         <button class="menu-toggle" @click="menuOpen = !menuOpen">☰</button>
       </div>
@@ -159,6 +159,12 @@
       </div>
     </section>
 
+    <!-- RAG 加载动画 -->
+    <div v-if="showRagLoading" class="rag-loading-overlay">
+      <iframe src="/jet-loading.html" class="rag-loading-iframe" frameborder="0"></iframe>
+      <div class="rag-loading-msg">{{ ragLoadingMsg }}</div>
+    </div>
+
     <!-- 页脚 -->
     <footer class="footer">
       <div class="container">
@@ -204,6 +210,9 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const menuOpen = ref(false)
 const currentSlide = ref(0)
@@ -283,9 +292,80 @@ onMounted(() => {
 })
 onUnmounted(() => clearInterval(timer))
 
+const showRagLoading = ref(false)
+const ragLoadingMsg = ref('检测 RAG 服务状态...')
+let ragCheckInterval: ReturnType<typeof setInterval> | null = null
+
 function scrollTo(id: string) {
   menuOpen.value = false
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' })
+}
+
+async function openToolbox() {
+  menuOpen.value = false
+  ragLoadingMsg.value = '检测 RAG 服务状态...'
+
+  try {
+    // 1. 检测 RAG 是否在线
+    const checkRes = await fetch('/api/rag/check')
+    const checkData = await checkRes.json()
+
+    if (checkData.online) {
+      // RAG 已在线，直接跳转
+      router.push('/school-rules')
+      return
+    }
+
+    // 2. 显示加载动画
+    showRagLoading.value = true
+    ragLoadingMsg.value = 'RAG 服务未启动，正在启动...'
+
+    // 3. 调用后端启动 RAG
+    const startRes = await fetch('/api/rag/start', { method: 'POST' })
+    const startData = await startRes.json()
+
+    if (!startData.success) {
+      ragLoadingMsg.value = `启动失败: ${startData.message}`
+      setTimeout(() => { showRagLoading.value = false }, 3000)
+      return
+    }
+
+    // 4. 轮询等待 RAG 就绪
+    ragLoadingMsg.value = 'RAG 服务启动中，请稍候...'
+    let attempts = 0
+    const maxAttempts = 60 // 最多等待 60 秒
+
+    ragCheckInterval = setInterval(async () => {
+      attempts++
+      if (attempts > maxAttempts) {
+        if (ragCheckInterval) clearInterval(ragCheckInterval)
+        ragLoadingMsg.value = '启动超时，请稍后重试'
+        setTimeout(() => { showRagLoading.value = false }, 2000)
+        return
+      }
+
+      try {
+        const res = await fetch('/api/rag/check')
+        const data = await res.json()
+        if (data.online) {
+          if (ragCheckInterval) clearInterval(ragCheckInterval)
+          ragLoadingMsg.value = 'RAG 服务就绪，正在进入...'
+          setTimeout(() => {
+            showRagLoading.value = false
+            router.push('/school-rules')
+          }, 500)
+        } else {
+          ragLoadingMsg.value = `RAG 服务启动中... (${attempts}s)`
+        }
+      } catch (e) {
+        ragLoadingMsg.value = `RAG 服务启动中... (${attempts}s)`
+      }
+    }, 1000)
+
+  } catch (e) {
+    ragLoadingMsg.value = '检测 RAG 服务失败，请检查后端是否启动'
+    setTimeout(() => { showRagLoading.value = false }, 3000)
+  }
 }
 </script>
 
@@ -848,5 +928,35 @@ function scrollTo(id: string) {
   .hero-content h1 { font-size: 1.4rem; }
   .section-title { font-size: 1.4rem; }
   .gallery-grid { grid-template-columns: 1fr; }
+}
+
+/* RAG 加载动画 */
+.rag-loading-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.rag-loading-iframe {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  inset: 0;
+}
+.rag-loading-msg {
+  position: relative;
+  z-index: 10;
+  color: rgba(255,255,255,0.85);
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(100,200,255,0.6);
+  bottom: 60px;
+  margin-top: auto;
+  padding-bottom: 60px;
 }
 </style>

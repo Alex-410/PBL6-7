@@ -41,6 +41,7 @@ public class SecurityConfig {
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
+                .requestMatchers("/api/rag/check", "/api/rag/start").permitAll()
                 .anyRequest().authenticated()
             );
 
