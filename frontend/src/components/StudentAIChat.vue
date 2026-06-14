@@ -66,16 +66,12 @@
 
 <script setup lang="ts">
 import { ref, nextTick, onMounted } from 'vue'
+import { aiApi } from '../services/api'
 
 interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
   time?: string
-}
-
-const AI_CONFIG = {
-  baseURL: 'https://ark.cn-beijing.volces.com/api/v3',
-  apiKey: 'ark-809c6b18-909a-4bb5-8fb8-3e2dd56584c0-c4e20'
 }
 
 const selectedModel = ref('doubao-seed-1-8-251228')
@@ -117,30 +113,23 @@ const sendMessage = async () => {
       content: m.content
     }))
 
-    const response = await fetch(`${AI_CONFIG.baseURL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${AI_CONFIG.apiKey}`
-      },
-      body: JSON.stringify({
-        model: selectedModel.value,
-        messages: conversationHistory,
-        temperature: 0.7
-      })
+    const res: any = await aiApi.chat({
+      model: selectedModel.value,
+      messages: conversationHistory,
+      temperature: 0.7
     })
-
-    const data = await response.json()
+    // 响应拦截器已 unwrap，res 即后端 Result envelope；res.data 为上游 Ark 响应体
+    const data = res.data
     console.log('AI响应:', data)
 
-    if (data.choices && data.choices[0]?.message?.content) {
+    if (data && data.choices && data.choices[0]?.message?.content) {
       const aiContent = data.choices[0].message.content
       messages.value.push({
         role: 'assistant',
         content: aiContent,
         time: formatTime()
       })
-    } else if (data.error) {
+    } else if (data && data.error) {
       messages.value.push({
         role: 'assistant',
         content: `错误: ${data.error.message || '未知错误'}`,

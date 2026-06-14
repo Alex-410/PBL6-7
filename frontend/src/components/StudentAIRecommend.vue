@@ -63,7 +63,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { activityApi, registrationApi } from '../services/api'
+import { activityApi, registrationApi, aiApi } from '../services/api'
 
 interface Activity {
   id: number
@@ -95,11 +95,7 @@ const error = ref('')
 const recommendations = ref<RecommendItem[]>([])
 const activities = ref<Activity[]>([])
 
-const AI_CONFIG = {
-  baseURL: 'https://ark.cn-beijing.volces.com/api/v3',
-  apiKey: 'ark-809c6b18-909a-4bb5-8fb8-3e2dd56584c0-c4e20',
-  modelId: 'doubao-seed-2-0-code-preview-260215'
-}
+const RECOMMEND_MODEL = 'doubao-seed-2-0-code-preview-260215'
 
 const formatDate = (dateStr: string) => {
   const date = new Date(dateStr)
@@ -163,24 +159,16 @@ ${activitiesInfo.map((a: any, i: number) => `${i+1}. ${a.title} - ${a.category} 
 请按以下JSON格式返回推荐结果：
 {"recommendations":[{"activity_id":活动ID,"reason":"推荐理由"},{"activity_id":活动ID,"reason":"推荐理由"}]}`
 
-    const response = await fetch(`${AI_CONFIG.baseURL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${AI_CONFIG.apiKey}`
-      },
-      body: JSON.stringify({
-        model: AI_CONFIG.modelId,
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.7
-      })
+    const res: any = await aiApi.chat({
+      model: RECOMMEND_MODEL,
+      messages: [{ role: 'user', content: prompt }],
+      temperature: 0.7
     })
-
-    console.log('AI API响应状态:', response.status)
-    const data = await response.json()
+    // 响应拦截器已 unwrap，res 即后端 Result envelope；res.data 为上游 Ark 响应体
+    const data = res.data
     console.log('AI API返回数据:', data)
-    
-    if (data.choices && data.choices[0]?.message?.content) {
+
+    if (data && data.choices && data.choices[0]?.message?.content) {
       const content = data.choices[0].message.content
       console.log('AI返回内容:', content)
       const match = content.match(/\{[\s\S]*\}/)
