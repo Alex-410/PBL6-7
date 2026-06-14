@@ -76,6 +76,34 @@
 
 ### 1. 后端服务
 
+#### 1.1 配置环境变量（重要）
+
+AI 推荐和 AI 聊天功能依赖火山方舟（豆包）API 密钥，数据库密码也通过环境变量注入。
+项目使用 `.env` 文件管理敏感配置（**已被 `.gitignore` 忽略，不会进入版本库**）。
+
+```bash
+cd backend
+
+# 复制示例文件为 .env
+copy .env.example .env        # Windows CMD
+# Copy-Item .env.example .env # PowerShell
+
+# 编辑 .env，填入真实值（至少填 ARK_API_KEY 和 DB_PASSWORD）
+notepad .env
+```
+
+`.env` 文件关键项：
+
+| 变量 | 说明 | 获取方式 |
+|------|------|----------|
+| `ARK_API_KEY` | 火山方舟 API 密钥 | https://console.volcengine.com/ark 创建 API Key |
+| `DB_USERNAME` | MySQL 用户名 | 默认 root |
+| `DB_PASSWORD` | MySQL 密码 | 本机数据库密码 |
+
+> 说明：后端通过 `spring-dotenv` 库在启动时自动读取 `backend/.env`。不填 `ARK_API_KEY` 不会报错，但 AI 推荐会返回兜底数据（前 3 个活动 + 固定文案），AI 聊天会不可用。
+
+#### 1.2 创建数据库并启动
+
 ```bash
 # 创建数据库
 mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS pbl6"
@@ -83,10 +111,12 @@ mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS pbl6"
 # 导入表结构
 mysql -u root -p pbl6 < backend/src/main/resources/db/schema.sql
 
-# 启动后端
+# 启动后端（务必在 backend/ 目录下运行，spring-dotenv 才能找到 .env）
 cd backend
 mvn spring-boot:run
 ```
+
+> 首次构建若出现 `Could not transfer ... 403 Forbidden`，是国内访问 Maven Central 受限，需配置阿里云镜像。在 `%USERPROFILE%\.m2\settings.xml` 配置 `mirrorOf=central` 指向 `https://maven.aliyun.com/repository/public` 即可。
 
 后端运行在 http://localhost:8080
 
