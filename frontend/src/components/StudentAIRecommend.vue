@@ -440,5 +440,14 @@ onMounted(() => {
     width: 100%;
     height: 180px;
   }
+
+  .ai-header h2 {
+    font-size: 1.4rem;
+  }
+
+  .activity-meta {
+    flex-direction: column;
+    gap: 4px;
+  }
 }
 </style>

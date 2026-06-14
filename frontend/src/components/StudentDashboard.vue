@@ -62,3 +62,17 @@ if(regRes.code===200){regIds.value=new Set((regRes.data||[]).filter((r:any)=>['r
 finally{loading.value=false}
 })
 </script>
+
+<style scoped>
+@media (max-width: 768px) {
+  .filter-bar {
+    flex-wrap: wrap;
+  }
+  .filter-bar .search-input {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    flex: 0 0 100%;
+  }
+}
+</style>

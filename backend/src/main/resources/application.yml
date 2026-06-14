@@ -32,6 +32,11 @@ ai:
     base-url: https://ark.cn-beijing.volces.com/api/v3
     api-key: ${ARK_API_KEY:}
 
+rag:
+  script-path: ${RAG_SCRIPT_PATH:../campus-rag/main.py}
+  python: ${RAG_PYTHON:python}
+  port: ${RAG_PORT:9001}
+
 logging:
   level:
     com.campus.activity: debug

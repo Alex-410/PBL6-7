@@ -3,7 +3,7 @@
 <div class="section-title mb-24">发布新活动</div>
 <div class="card"><div class="card-body">
 <form @submit.prevent="submit">
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+<div class="form-row">
 <div class="form-group mb-16">
 <label class="form-label">活动标题 *</label>
 <input class="form-input" v-model="form.title" placeholder="输入活动标题" required/>
@@ -20,7 +20,7 @@
 <label class="form-label">活动描述 *</label>
 <textarea class="form-input" v-model="form.description" rows="4" placeholder="详细描述活动内容" required></textarea>
 </div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+<div class="form-row">
 <div class="form-group mb-16">
 <label class="form-label">活动主办方 *</label>
 <input class="form-input" v-model="form.organizer" placeholder="例：计算机学院" required/>
@@ -30,7 +30,7 @@
 <input class="form-input" type="number" v-model.number="form.maxCount" min="1" placeholder="100"/>
 </div>
 </div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+<div class="form-row">
 <div class="form-group mb-16">
 <label class="form-label">开始时间</label>
 <input class="form-input" type="datetime-local" v-model="form.startTime"/>
@@ -40,7 +40,7 @@
 <input class="form-input" type="datetime-local" v-model="form.endTime"/>
 </div>
 </div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+<div class="form-row">
 <div class="form-group mb-16">
 <label class="form-label">活动地点</label>
 <input class="form-input" v-model="form.location" placeholder="例：图书馆报告厅"/>
@@ -50,7 +50,7 @@
 <input class="form-input" v-model="form.tags" placeholder="AI,讲座,技术"/>
 </div>
 </div>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+<div class="form-row">
 <div class="form-group mb-16">
 <label class="form-label">是否含加分</label>
 <select class="form-input" v-model="form.hasBonus" style="max-width:200px">

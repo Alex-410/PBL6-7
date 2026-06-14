@@ -17,10 +17,30 @@
       </div>
     </div>
 
+    <!-- RAG 离线提示 -->
+    <div v-if="!ragOnline" class="rag-offline">
+      <div class="offline-content">
+        <div class="offline-icon">⚡</div>
+        <h2>RAG 服务</h2>
+        <p v-if="ragStarting" class="offline-msg">{{ ragStatusMsg }}</p>
+        <p v-else class="offline-msg">{{ ragStatusMsg || '服务未就绪' }}</p>
+        <div v-if="ragStarting" class="loading-bar">
+          <div class="loading-bar-inner"></div>
+        </div>
+        <button v-if="!ragStarting" class="retry-btn" @click="checkAndStartRag">重试连接</button>
+        <router-link to="/" class="back-home">返回首页</router-link>
+      </div>
+    </div>
+
     <!-- Main Content -->
-    <div class="main-content">
+    <div v-else class="main-content">
+      <!-- Mobile Sidebar Toggle -->
+      <button class="sidebar-toggle" @click="showSidebar = !showSidebar">
+        {{ showSidebar ? '✕' : '☰' }} 对话
+      </button>
+
       <!-- Conversations Sidebar -->
-      <div class="conversations-sidebar">
+      <div class="conversations-sidebar" :class="{ open: showSidebar }">
         <button class="new-chat-btn" @click="createNewConversation">
           + 新建对话
         </button>
@@ -245,7 +265,10 @@
 
 <script setup lang="ts">
 import { ref, nextTick, onMounted, reactive } from 'vue'
+import { useRouter } from 'vue-router'
 import MarkdownIt from 'markdown-it'
+
+const router = useRouter()
 
 const md = new MarkdownIt({
   html: false,
@@ -278,6 +301,7 @@ const loading = ref(false)
 const messagesContainer = ref<HTMLElement | null>(null)
 const conversationId = ref('')
 const conversations = ref<any[]>([])
+const showSidebar = ref(false)
 
 // Status
 const status = reactive<any>({
@@ -357,6 +381,7 @@ const loadConversations = async () => {
 
 const switchConversation = async (convId: string) => {
   conversationId.value = convId
+  showSidebar.value = false
   try {
     const msgRes = await fetch(`${RAG_API}/api/rag/conversations/${convId}/messages/`)
     const msgData = await msgRes.json()
@@ -610,19 +635,84 @@ const deleteDoc = async (filename: string) => {
   }
 }
 
+const ragOnline = ref(true)
+const ragStarting = ref(false)
+const ragStatusMsg = ref('')
+
+async function checkAndStartRag() {
+  try {
+    const res = await fetch('/api/rag/check')
+    const data = await res.json()
+    if (data.online) {
+      ragOnline.value = true
+      loadStatus()
+      loadConversations()
+      return
+    }
+  } catch (e) {
+    console.error('检查 RAG 状态失败:', e)
+  }
+
+  // RAG 不在线，尝试启动
+  ragOnline.value = false
+  ragStarting.value = true
+  ragStatusMsg.value = 'RAG 服务未启动，正在尝试启动...'
+
+  try {
+    const startRes = await fetch('/api/rag/start', { method: 'POST' })
+    const startData = await startRes.json()
+
+    if (startData.success) {
+      ragStatusMsg.value = 'RAG 服务启动中，请稍候...'
+      // 轮询等待
+      let attempts = 0
+      const checkInterval = setInterval(async () => {
+        attempts++
+        if (attempts > 60) {
+          clearInterval(checkInterval)
+          ragStatusMsg.value = '启动超时，请刷新页面重试'
+          ragStarting.value = false
+          return
+        }
+        try {
+          const res = await fetch('/api/rag/check')
+          const data = await res.json()
+          if (data.online) {
+            clearInterval(checkInterval)
+            ragOnline.value = true
+            ragStarting.value = false
+            loadStatus()
+            loadConversations()
+          } else {
+            ragStatusMsg.value = `RAG 服务启动中... (${attempts}s)`
+          }
+        } catch (e) {
+          // 继续等待
+        }
+      }, 1000)
+    } else {
+      ragStatusMsg.value = `启动失败: ${startData.message}`
+      ragStarting.value = false
+    }
+  } catch (e) {
+    ragStatusMsg.value = '无法连接后端服务，请检查后端是否启动'
+    ragStarting.value = false
+  }
+}
+
 onMounted(() => {
-  loadStatus()
-  loadConversations()
+  checkAndStartRag()
 })
 </script>
 
 <style scoped>
 .rag-page {
-  min-height: 100vh;
+  height: 100vh;
   background: var(--bg, #F5F1EB);
   display: flex;
   flex-direction: column;
   font-family: var(--font-body, 'Noto Serif SC', Georgia, serif);
+  overflow: hidden;
 }
 
 /* Header */
@@ -801,6 +891,7 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: 0;
   max-width: 960px;
   width: 100%;
   margin: 0 auto;
@@ -814,7 +905,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  min-height: 400px;
 }
 
 /* Welcome */
@@ -1153,6 +1243,8 @@ onMounted(() => {
   display: flex;
   gap: 12px;
   padding: 16px 0 24px;
+  flex-shrink: 0;
+  background: var(--bg, #F5F1EB);
 }
 
 .chat-input textarea {
@@ -1556,12 +1648,100 @@ onMounted(() => {
   padding: 20px;
 }
 
+/* RAG 离线提示 */
+.rag-offline {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg, #F5F1EB);
+}
+.offline-content {
+  text-align: center;
+  padding: 40px;
+}
+.offline-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+.offline-content h2 {
+  font-family: var(--font-display, 'Noto Serif SC', serif);
+  color: var(--ink, #2D2A26);
+  margin-bottom: 12px;
+}
+.offline-msg {
+  color: var(--ink-muted, #888);
+  font-size: 0.95rem;
+  margin-bottom: 24px;
+}
+.loading-bar {
+  width: 200px;
+  height: 4px;
+  background: var(--border-light, #e8e0d6);
+  border-radius: 2px;
+  margin: 0 auto 24px;
+  overflow: hidden;
+}
+.loading-bar-inner {
+  width: 40%;
+  height: 100%;
+  background: var(--accent, #6B4C3B);
+  border-radius: 2px;
+  animation: loadingSlide 1.5s ease-in-out infinite;
+}
+@keyframes loadingSlide {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(150%); }
+  100% { transform: translateX(-100%); }
+}
+.retry-btn {
+  padding: 10px 24px;
+  background: var(--accent, #6B4C3B);
+  color: white;
+  border: none;
+  border-radius: var(--radius, 6px);
+  cursor: pointer;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+  transition: opacity 0.2s;
+}
+.retry-btn:hover {
+  opacity: 0.9;
+}
+.back-home {
+  display: block;
+  color: var(--ink-muted, #888);
+  font-size: 0.85rem;
+  text-decoration: none;
+}
+.back-home:hover {
+  color: var(--ink, #2D2A26);
+}
+
+/* Sidebar Toggle (mobile) */
+.sidebar-toggle {
+  display: none;
+  position: fixed;
+  bottom: 80px;
+  left: 16px;
+  z-index: 25;
+  padding: 10px 16px;
+  background: var(--accent, #6B4C3B);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .rag-header {
     flex-direction: column;
     gap: 8px;
     text-align: center;
+    padding: 12px 16px;
   }
 
   .header-actions {
@@ -1571,13 +1751,35 @@ onMounted(() => {
 
   .main-content {
     flex-direction: column;
+    position: relative;
+  }
+
+  .sidebar-toggle {
+    display: flex;
   }
 
   .conversations-sidebar {
+    display: none;
     width: 100%;
-    max-height: 200px;
+    max-height: 50vh;
     border-right: none;
     border-bottom: 1px solid var(--border-light, #e8e0d6);
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    background: var(--surface, #fff);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .conversations-sidebar.open {
+    display: flex;
+  }
+
+  .chat-container {
+    width: 100%;
+    padding: 0 12px;
   }
 
   .message {
@@ -1586,6 +1788,7 @@ onMounted(() => {
 
   .chat-input {
     flex-direction: column;
+    padding: 12px 0 16px;
   }
 
   .chat-input button {
@@ -1598,6 +1801,16 @@ onMounted(() => {
 
   .chunk-config {
     flex-direction: column;
+  }
+
+  .modal {
+    width: 95%;
+    max-height: 90vh;
+    margin: 10px;
+  }
+
+  .modal-body {
+    padding: 16px;
   }
 }
 </style>

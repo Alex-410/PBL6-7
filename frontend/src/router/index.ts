@@ -25,6 +25,7 @@ const router = createRouter({
     { path: '/admin', name: 'admin', meta: { role: 'admin' }, component: () => import('../views/AdminDashboardView.vue') },
     { path: '/student-publisher', name: 'student-publisher', meta: { role: 'student_publisher' }, component: () => import('../views/StudentPublisherDashboardView.vue') },
     { path: '/school-rules', name: 'school-rules', component: () => import('../components/SchoolRulesRAG.vue') },
+    { path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('../views/NotFoundView.vue') },
   ]
 })
 

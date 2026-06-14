@@ -7,7 +7,9 @@
 </div>
 <div v-if="loading" class="empty-state"><p>加载中...</p></div>
 <div v-else-if="pending.length===0" class="empty-state"><div class="empty-icon">✅</div><p>所有活动已审批完毕</p></div>
-<div v-else class="table-wrap">
+<template v-else>
+<!-- Desktop -->
+<div class="table-wrap desktop-only">
 <table>
 <thead><tr><th>活动名称</th><th>发布者</th><th>类型</th><th>时间</th><th>人数</th><th>加分</th><th>操作</th></tr></thead>
 <tbody>
@@ -23,6 +25,24 @@
 </tbody>
 </table>
 </div>
+<!-- Mobile -->
+<div class="mobile-cards mobile-only">
+<div class="mobile-approval-card" v-for="a in pending" :key="a.id">
+<div class="approval-card-title" @click="$emit('viewActivity',a.id)">{{a.title}}</div>
+<div class="approval-card-meta">
+<span class="badge badge-blue">{{a.category}}</span>
+<span class="mono text-sm">{{a.organizer}}</span>
+<span class="mono text-sm">{{a.startTime}}</span>
+<span class="mono text-sm">{{a.maxCount}}人</span>
+<span v-if="a.hasBonus" class="badge badge-amber">{{a.bonusType}} +{{a.bonusValue}}</span>
+</div>
+<div class="approval-card-actions">
+<button class="btn btn-sm btn-green" @click="approve(a.id)">通过</button>
+<button class="btn btn-sm btn-danger" @click="reject(a.id)">驳回</button>
+</div>
+</div>
+</div>
+</template>
 </div>
 </template>
 <script setup lang="ts">
@@ -42,3 +62,38 @@ async function approve(id:string){try{await activityApi.audit(Number(id),'approv
 async function reject(id:string){try{await activityApi.audit(Number(id),'reject');await load()}catch(e){console.error(e)}}
 onMounted(load)
 </script>
+
+<style scoped>
+.desktop-only { display: block; }
+.mobile-only { display: none; }
+.mobile-approval-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border-light);
+  border-radius: var(--radius);
+  padding: 14px;
+  margin-bottom: 10px;
+}
+.approval-card-title {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 6px;
+  line-height: 1.3;
+}
+.approval-card-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.approval-card-actions {
+  display: flex;
+  gap: 8px;
+}
+@media (max-width: 768px) {
+  .desktop-only { display: none; }
+  .mobile-only { display: block; }
+}
+</style>

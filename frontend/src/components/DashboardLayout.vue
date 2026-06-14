@@ -82,14 +82,14 @@ function onGo(v:string){emit('go',v);sidebarOpen.value=false;showNotif.value=fal
 .notif-badge{position:absolute;top:-4px;right:-4px;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;font-family:var(--font-mono);font-size:.6rem;display:flex;align-items:center;justify-content:center;border:2px solid var(--surface)}
 .hamburger{display:none;width:36px;height:36px;align-items:center;justify-content:center;border:1.5px solid var(--border-light);border-radius:var(--radius);font-size:1.2rem;cursor:pointer;background:none}
 .content{flex:1;padding:28px}
-.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(26,22,19,.5);z-index:99}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(26,22,19,.5);z-index:105}
 .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--ink);border-top:2px solid rgba(255,255,255,.1);z-index:100;padding:6px 0}
 .bottom-nav-items{display:flex;justify-content:space-around}
 .bottom-nav-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 12px;color:rgba(255,255,255,.45);font-family:var(--font-mono);font-size:.6rem;cursor:pointer;border:none;background:none}
 .bottom-nav-item.active{color:var(--surface)}
 .bottom-nav-item .nav-icon{font-size:1.2rem}
 @media(max-width:768px){
-.sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}.sidebar-overlay.show{display:block}
+.sidebar{transform:translateX(-100%);z-index:110}.sidebar.open{transform:translateX(0);z-index:110}.sidebar-overlay.show{display:block}
 .main-area{margin-left:0}.hamburger{display:flex}.content{padding:16px;padding-bottom:80px}.bottom-nav{display:block}.topbar{padding:0 16px}
 }
 </style>
