@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const rawApi = axios.create({
   baseURL: 'http://localhost:8080/api',
-  timeout: 10000,
+  timeout: 60000,
   headers: {
     'Content-Type': 'application/json'
   }
@@ -68,6 +68,21 @@ export const userApi = {
 
 export const adminApi = {
   stats: () => api.get('/admin/stats'),
+};
+
+/**
+ * AI 代理接口。
+ * 请求体原样透传到后端，由后端注入火山方舟密钥后再转发，
+ * 密钥不出现在前端。JWT 由请求拦截器自动带上。
+ */
+export interface AiChatPayload {
+  model: string;
+  messages: { role: 'user' | 'assistant' | 'system'; content: string }[];
+  temperature?: number;
+}
+
+export const aiApi = {
+  chat: (payload: AiChatPayload) => api.post('/ai/chat', payload),
 };
 
 export default api;
