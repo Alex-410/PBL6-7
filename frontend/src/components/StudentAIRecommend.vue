@@ -6,7 +6,18 @@
       <p>基于你的兴趣和活动余量，AI为你推荐以下活动</p>
     </div>
 
-    <div class="loading-state" v-if="loading">
+    <!-- 初始状态：未点击不调用 AI，节省 token -->
+    <div class="idle-state" v-if="!started">
+      <div class="idle-icon">✨</div>
+      <h3 class="idle-title">准备好获取推荐了吗？</h3>
+      <p class="idle-desc">点击下方按钮，AI 将根据当前活动为你生成个性化推荐</p>
+      <button class="start-btn" @click="fetchAIRecommend">
+        🤖 获取 AI 智能推荐
+      </button>
+      <p class="idle-hint">💡 每次调用都会消耗 AI 配额，建议按需使用</p>
+    </div>
+
+    <div class="loading-state" v-else-if="loading">
       <div class="loading-spinner"></div>
       <p>AI正在分析活动，生成推荐中...</p>
     </div>
@@ -62,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { activityApi, registrationApi, aiApi } from '../services/api'
 
 interface Activity {
@@ -92,6 +103,7 @@ const emit = defineEmits(['viewActivity'])
 
 const loading = ref(false)
 const error = ref('')
+const started = ref(false)
 const recommendations = ref<RecommendItem[]>([])
 const activities = ref<Activity[]>([])
 
@@ -128,6 +140,7 @@ const fetchActivities = async () => {
 }
 
 const fetchAIRecommend = async () => {
+  started.value = true
   loading.value = true
   error.value = ''
   
@@ -226,10 +239,6 @@ const registerActivity = async (activityId: number) => {
     alert(e.response?.data?.message || '报名失败')
   }
 }
-
-onMounted(() => {
-  fetchAIRecommend()
-})
 </script>
 
 <style scoped>
@@ -256,6 +265,56 @@ onMounted(() => {
 
 .ai-header p {
   color: var(--ink-muted);
+}
+
+.idle-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--surface-alt);
+  border-radius: var(--radius);
+}
+
+.idle-icon {
+  font-size: 56px;
+  margin-bottom: 16px;
+}
+
+.idle-title {
+  font-size: 1.4rem;
+  margin-bottom: 8px;
+  color: var(--ink);
+}
+
+.idle-desc {
+  color: var(--ink-muted);
+  margin-bottom: 24px;
+}
+
+.start-btn {
+  padding: 14px 36px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.start-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.start-btn:active {
+  transform: translateY(0);
+}
+
+.idle-hint {
+  margin-top: 20px;
+  color: var(--ink-muted);
+  font-size: 0.875rem;
 }
 
 .loading-state {
